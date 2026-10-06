@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day Planner — Alarms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1C2422;
+    --ink-soft: #2A3330;
+    --paper: #FBF8F2;
+    --paper-dim: #F2EEE4;
+    --brass: #A9824F;
+    --brass-deep: #8C6A3D;
+    --coral: #C6503E;
+    --text-muted: #746C5E;
+    --line: #E3DDCE;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(169,130,79,0.10), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(169,130,79,0.06), transparent 50%);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 64px 20px;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 560px;
+    background: var(--paper);
+    border-radius: 3px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.55);
+    overflow: hidden;
+  }
+
+  header {
+    padding: 40px 44px 28px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+
+  header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ---- Form ---- */
+  .composer {
+    padding: 28px 44px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .field input {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 6px 2px 10px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .field input::placeholder { color: #B8AF9E; }
+  .field input:focus { border-color: var(--brass); }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .add-btn {
+    margin-top: 6px;
+    align-self: flex-start;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--ink);
+    border: none;
+    padding: 12px 22px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .add-btn:hover { background: var(--ink-soft); }
+  .add-btn:active { transform: scale(0.98); }
+
+  /* ---- Timeline list ---- */
+  .agenda { padding: 8px 44px 40px; }
+
+  .agenda-empty {
+    padding: 36px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .timeline { position: relative; }
+
+  .entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    column-gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .entry:last-child { border-bottom: none; }
+
+  .entry .rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  .entry .rail::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    bottom: -20px;
+    width: 1px;
+    background: var(--line);
+  }
+  .entry:last-child .rail::before { display: none; }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1.5px solid var(--brass);
+    margin-top: 4px;
+    z-index: 1;
+    transition: all 0.25s ease;
+  }
+  .entry.done .dot { background: var(--brass); border-color: var(--brass); }
+  .entry.ringing .dot {
+    background: var(--coral);
+    border-color: var(--coral);
+    box-shadow: 0 0 0 4px rgba(198,80,62,0.18);
+  }
+
+  .entry-body { min-width: 0; }
+
+  .entry-top {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .task-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .entry.done .task-name { color: #B0A896; text-decoration: line-through; text-decoration-color: #C9C1AE; }
+
+  .task-subject {
+    font-size: 12px;
+    color: var(--brass-deep);
+    border: 1px solid var(--line);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .meta-line {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .meta-line .countdown { color: var(--coral); font-weight: 500; }
+  .entry.done .meta-line .countdown { color: var(--text-muted); font-weight: 400; }
+  .entry.ringing .meta-line .countdown {
+    animation: soft-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes soft-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  .entry-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-muted);
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .icon-btn:hover { color: var(--ink); background: var(--paper-dim); }
+
+  .stop-pill {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--coral);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .stop-pill:hover { background: #B0432F; }
+
+  @media (max-width: 480px) {
+    .sheet { border-radius: 0; }
+    header, .composer, .agenda { padding-left: 26px; padding-right: 26px; }
+    .row-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <header>
+    <h1>Today's agenda</h1>
+    <p>Set a task, a subject, and the moment it matters — it'll ring when the time comes.</p>
+  </header>
+
+  <div class="composer">
+    <div class="field">
+      <label for="taskInput">Task</label>
+      <input type="text" id="taskInput" placeholder="e.g. Submit the draft">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="subjectInput">Subject</label>
+        <input type="text" id="subjectInput" placeholder="e.g. Design review">
+      </div>
+      <div class="field">
+        <label for="timeInput">Alarm time</label>
+        <input type="datetime-local" id="timeInput">
+      </div>
+    </div>
+    <button class="add-btn" id="addBtn">Add to agenda</button>
+  </div>
+
+  <div class="agenda">
+    <div class="timeline" id="todoList"></div>
+    <div class="agenda-empty" id="emptyState">Nothing on the agenda yet.</div>
+  </div>
+</div>
+
+<audio id="alarmSound" loop>
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
+
+<script>
+  const taskInput = document.getElementById('taskInput');
+  const subjectInput = document.getElementById('subjectInput');
+  const timeInput = document.getElementById('timeInput');
+  const addBtn = document.getElementById('addBtn');
+  const todoList = document.getElementById('todoList');
+  const emptyState = document.getElementById('emptyState');
+  const alarmSound = document.getElementById('alarmSound');
+
+  let tasks = [];
+  let idCounter = 0;
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  addBtn.addEventListener('click', addTask);
+  taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
+
+  function addTask() {
+    const name = taskInput.value.trim();
+    const subject = subjectInput.value.trim();
+    const time = timeInput.value;
+
+    if (!name) { taskInput.focus(); return; }
+    if (!time) { timeInput.focus(); return; }
+
+    const alarmTime = new Date(time).getTime();
+    if (alarmTime < Date.now()) { alert('Please choose a time in the future'); return; }
+
+    const task = {
+      id: idCounter++,
+      name, subject,
+      time: alarmTime,
+      done: false,
+      ringing: false,
+      timeoutId: null
+    };
+
+    tasks.push(task);
+    scheduleAlarm(task);
+    renderTasks();
+
+    taskInput.value = '';
+    subjectInput.value = '';
+    timeInput.value = '';
+    taskInput.focus();
+  }
+
+  function scheduleAlarm(task) {
+    const delay = task.time - Date.now();
+    task.timeoutId = setTimeout(() => triggerAlarm(task.id), delay);
+  }
+
+  function triggerAlarm(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task || task.done) return;
+
+    task.ringing = true;
+    renderTasks();
+
+    alarmSound.play().catch(() => {});
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(task.name, { body: task.subject || 'Alarm time' });
+    } else {
+      document.title = '● ' + task.name;
+    }
+  }
+
+  function stopAlarm(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    task.ringing = false;
+    alarmSound.pause();
+    alarmSound.currentTime = 0;
+    document.title = "Day Planner — Alarms";
+    renderTasks();
+  }
+
+  function toggleDone(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    task.done = !task.done;
+    if (task.done) {
+      clearTimeout(task.timeoutId);
+      task.ringing = false;
+      alarmSound.pause();
+    }
+    renderTasks();
+  }
+
+  function deleteTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) clearTimeout(task.timeoutId);
+    tasks = tasks.filter(t => t.id !== id);
+    renderTasks();
+  }
+
+  function formatTime(ts) {
+    return new Date(ts).toLocaleString(undefined, {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+  }
+
+  function formatCountdown(ts) {
+    const diff = ts - Date.now();
+    if (diff <= 0) return 'now';
+    const s = Math.floor(diff / 1000);
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+
+    let parts = [];
+    if (d > 0) parts.push(d + 'd');
+    if (h > 0 || d > 0) parts.push(h + 'h');
+    if (m > 0 || h > 0 || d > 0) parts.push(m + 'm');
+    if (d === 0 && h === 0) parts.push(sec + 's');
+
+    return 'in ' + parts.join(' ');
+  }
+
+  function renderTasks() {
+    todoList.innerHTML = '';
+    const sorted = tasks.slice().sort((a, b) => a.time - b.time);
+
+    emptyState.style.display = sorted.length ? 'none' : 'block';
+
+    sorted.forEach(task => {
+      const entry = document.createElement('div');
+      entry.className = 'entry' + (task.done ? ' done' : '') + (task.ringing ? ' ringing' : '');
+
+      const rail = document.createElement('div');
+      rail.className = 'rail';
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      rail.appendChild(dot);
+
+      const body = document.createElement('div');
+      body.className = 'entry-body';
+
+      const top = document.createElement('div');
+      top.className = 'entry-top';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'task-name';
+      nameEl.textContent = task.name;
+      top.appendChild(nameEl);
+
+      if (task.subject) {
+        const subjEl = document.createElement('span');
+        subjEl.className = 'task-subject';
+        subjEl.textContent = task.subject;
+        top.appendChild(subjEl);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'meta-line';
+
+      const timeEl = document.createElement('span');
+      timeEl.textContent = formatTime(task.time);
+      meta.appendChild(timeEl);
+
+      if (!task.done) {
+        const cd = document.createElement('span');
+        cd.className = 'countdown';
+        cd.textContent = task.ringing ? 'ringing now' : formatCountdown(task.time);
+        meta.appendChild(cd);
+      }
+
+      body.appendChild(top);
+      body.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'entry-actions';
+
+      if (task.ringing) {
+        const stopBtn = document.createElement('button');
+        stopBtn.className = 'stop-pill';
+        stopBtn.textContent = 'Stop';
+        stopBtn.onclick = () => stopAlarm(task.id);
+        actions.appendChild(stopBtn);
+      }
+
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'icon-btn';
+      doneBtn.textContent = task.done ? '↺' : '✓';
+      doneBtn.title = task.done ? 'Mark not done' : 'Mark done';
+      doneBtn.onclick = () => toggleDone(task.id);
+      actions.appendChild(doneBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn';
+      delBtn.textContent = '×';
+      delBtn.title = 'Remove';
+      delBtn.onclick = () => deleteTask(task.id);
+      actions.appendChild(delBtn);
+
+      entry.appendChild(rail);
+      entry.appendChild(body);
+      entry.appendChild(actions);
+      todoList.appendChild(entry);
+    });
+  }
+
+  setInterval(() => { if (tasks.length) renderTasks(); }, 1000);
+
+  renderTasks();
+</script>
+
+</body>
+</html>

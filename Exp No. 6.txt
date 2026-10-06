@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Student Portfolio Setup</title>
+<style>
+  :root{
+    --pink: #c9184a;
+    --pink-dark: #a8123c;
+    --ink: #1c1c1c;
+    --muted: #6b6b6b;
+    --border: #d9d9d9;
+    --error: #d92d20;
+    --success-bg: #eafaf0;
+    --success-border: #b7e4c7;
+    --success-text: #1e6b3c;
+  }
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f2f2f2;
+    color: var(--ink);
+  }
+  .layout{
+    display:flex;
+    min-height:100vh;
+  }
+  .side{
+    flex: 1 1 40%;
+    background: var(--pink);
+    min-height: 100vh;
+  }
+  .main{
+    flex: 1 1 60%;
+    background: var(--pink);
+    padding: 48px 56px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap: 24px;
+  }
+  .heading h1{
+    color:#fff;
+    font-size: 28px;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+  .heading p{
+    color: rgba(255,255,255,0.9);
+    margin:0;
+    font-size: 14px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+  .card{
+    background:#fff;
+    border-radius: 10px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  .field{
+    margin-bottom: 18px;
+  }
+  .field label{
+    display:block;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .field input, .field textarea{
+    width:100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    outline: none;
+  }
+  .field input:focus, .field textarea:focus{
+    border-color: var(--pink);
+  }
+  .field input.invalid, .field textarea.invalid{
+    border-color: var(--error);
+    background: #fff6f5;
+  }
+  .error-msg{
+    color: var(--error);
+    font-size: 12.5px;
+    margin-top: 6px;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
+  textarea{
+    min-height: 96px;
+    resize: vertical;
+  }
+  .tool-row{
+    display:flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .tool-btn{
+    background: #f4f4f4;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .tool-btn:hover{ background:#ebebeb; }
+  .stats-row{
+    display:flex;
+    gap: 18px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .stats-row b{ color: var(--ink); }
+  .submit-btn{
+    width:100%;
+    background: #111;
+    color:#fff;
+    border:none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor:pointer;
+    margin-top: 6px;
+  }
+  .submit-btn:hover{ background:#000; }
+
+  .result-card{
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    width: 100%;
+    max-width: 520px;
+    display:none;
+  }
+  .result-card.show{ display:block; }
+  .result-title{
+    color: var(--success-text);
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 4px 0;
+  }
+  .result-sub{
+    color: #3f6d52;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+  }
+  .result-card .row{
+    margin-bottom: 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .result-card .row b{ margin-right: 4px; }
+  .bio-text{
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #2b2b2b;
+  }
+
+  @media (max-width: 900px){
+    .layout{ flex-direction: column; }
+    .side{ display:none; }
+    .main{ padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="side"></div>
+  <div class="main">
+    <div class="heading">
+      <h1>Student Portfolio Setup</h1>
+      <p>Enter your profile details. All string processing and structural validation happen locally.</p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" placeholder="e.g. Jordan Lee" />
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone Number (10 digits)</label>
+        <input type="text" id="phone" placeholder="e.g. 9876543210" />
+        <div class="error-msg" id="phoneError">Must contain only numeric values and exactly 10 digits.</div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        <input type="text" id="email" placeholder="e.g. user@domain.com" />
+        <div class="error-msg" id="emailError">Please enter a valid email format (e.g., user@domain.com).</div>
+      </div>
+
+      <div class="field">
+        <label for="summary">Short Summary About You</label>
+        <textarea id="summary" placeholder="Write a few sentences about yourself..."></textarea>
+        <div class="tool-row">
+          <button type="button" class="tool-btn" id="btnUpper">UPPERCASE</button>
+          <button type="button" class="tool-btn" id="btnLower">lowercase</button>
+          <button type="button" class="tool-btn" id="btnFixSpaces">Fix Double Spaces</button>
+        </div>
+        <div class="stats-row">
+          <span>Characters: <b id="charCount">0</b></span>
+          <span>Words: <b id="wordCount">0</b></span>
+          <span>Sentences: <b id="sentenceCount">0</b></span>
+        </div>
+      </div>
+
+      <button type="button" class="submit-btn" id="submitBtn">Submit Portfolio</button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <p class="result-title">&#10003; Information Submitted Successfully</p>
+      <p class="result-sub">Your portfolio record has been verified, parsed, and logged.</p>
+      <div class="row"><b>Name:</b><span id="outName"></span></div>
+      <div class="row"><b>Phone:</b><span id="outPhone"></span></div>
+      <div class="row"><b>Email:</b><span id="outEmail"></span></div>
+      <div class="row"><b>Summary Analytics:</b><span id="outStats"></span></div>
+      <div class="row">
+        <b>Bio Paragraph:</b>
+        <p class="bio-text" id="outBio"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fullNameEl = document.getElementById('fullName');
+  const phoneEl = document.getElementById('phone');
+  const emailEl = document.getElementById('email');
+  const summaryEl = document.getElementById('summary');
+
+  const phoneError = document.getElementById('phoneError');
+  const emailError = document.getElementById('emailError');
+
+  const charCountEl = document.getElementById('charCount');
+  const wordCountEl = document.getElementById('wordCount');
+  const sentenceCountEl = document.getElementById('sentenceCount');
+
+  const phoneRegex = /^[0-9]{10}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function updateStats(){
+    const text = summaryEl.value;
+    const trimmed = text.trim();
+
+    const charCount = text.length;
+    const wordCount = trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
+    const sentenceMatches = trimmed.match(/[^.!?]+[.!?]+/g);
+    const sentenceCount = sentenceMatches ? sentenceMatches.length : (trimmed.length ? 1 : 0);
+
+    charCountEl.textContent = charCount;
+    wordCountEl.textContent = wordCount;
+    sentenceCountEl.textContent = sentenceCount;
+  }
+
+  summaryEl.addEventListener('input', updateStats);
+
+  document.getElementById('btnUpper').addEventListener('click', () => {
+    summaryEl.value = summaryEl.value.toUpperCase();
+    updateStats();
+  });
+
+  document.getElementById('btnLower').addEventListener('click', () => {
+    summaryEl.value = summaryEl.value.toLowerCase();
+    updateStats();
+  });
+
+  document.getElementById('btnFixSpaces').addEventListener('click', () => {
+    summaryEl.value = summaryEl.value.replace(/ {2,}/g, ' ');
+    updateStats();
+  });
+
+  function validatePhone(){
+    const val = phoneEl.value.trim();
+    const valid = phoneRegex.test(val);
+    phoneEl.classList.toggle('invalid', !valid && val.length > 0);
+    phoneError.classList.toggle('show', !valid && val.length > 0);
+    return valid;
+  }
+
+  function validateEmail(){
+    const val = emailEl.value.trim();
+    const valid = emailRegex.test(val);
+    emailEl.classList.toggle('invalid', !valid && val.length > 0);
+    emailError.classList.toggle('show', !valid && val.length > 0);
+    return valid;
+  }
+
+  phoneEl.addEventListener('input', validatePhone);
+  emailEl.addEventListener('input', validateEmail);
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const nameVal = fullNameEl.value.trim();
+    const phoneValid = validatePhone();
+    const emailValid = validateEmail();
+    const phoneVal = phoneEl.value.trim();
+    const emailVal = emailEl.value.trim();
+
+    if (!nameVal || !phoneValid || !emailVal || !emailValid){
+      document.getElementById('resultCard').classList.remove('show');
+      if (!phoneVal) { phoneEl.classList.add('invalid'); phoneError.classList.add('show'); }
+      if (!emailVal) { emailEl.classList.add('invalid'); emailError.classList.add('show'); }
+      return;
+    }
+
+    const formattedName = nameVal
+      .split(/\s+/)
+      .map(w => w.toUpperCase())
+      .join(' ');
+
+    const summaryTrimmed = summaryEl.value.trim().replace(/ {2,}/g, ' ');
+    const words = summaryTrimmed.length ? summaryTrimmed.split(/\s+/).length : 0;
+    const chars = summaryTrimmed.length;
+    const sentMatches = summaryTrimmed.match(/[^.!?]+[.!?]+/g);
+    const sentences = sentMatches ? sentMatches.length : (summaryTrimmed.length ? 1 : 0);
+
+    document.getElementById('outName').textContent = formattedName;
+    document.getElementById('outPhone').textContent = phoneVal;
+    document.getElementById('outEmail').textContent = emailVal;
+    document.getElementById('outStats').textContent = `${words} words | ${chars} characters | ${sentences} sentences`;
+    document.getElementById('outBio').textContent = summaryTrimmed || '(No summary provided.)';
+
+    document.getElementById('resultCard').classList.add('show');
+    fullNameEl.value = formattedName;
+  });
+
+  updateStats();
+</script>
+</body>
+</html>

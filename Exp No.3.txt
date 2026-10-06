@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Report Card — Grade Calculator</title>
+<style>
+  :root{
+    --paper: #F7F3E8;
+    --board: #1F3A2E;
+    --board-2: #244635;
+    --ink: #2B2B28;
+    --red-pen: #B23A2E;
+    --gold: #C9971F;
+    --line: #d8d0ba;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--board);
+    background-image:
+      linear-gradient(var(--board-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--board-2) 1px, transparent 1px);
+    background-size: 28px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 16px;
+    font-family: 'Courier New', monospace;
+    color: var(--ink);
+  }
+
+  .card{
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 25px 50px rgba(0,0,0,.45);
+    padding: 40px 36px 32px;
+    background-image: repeating-linear-gradient(
+      to bottom, transparent, transparent 33px, var(--line) 34px
+    );
+  }
+
+  .eyebrow{
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--red-pen);
+    margin: 0 0 4px;
+  }
+
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 30px;
+    margin: 0 0 22px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 12px;
+  }
+
+  .row{
+    display:flex;
+    gap: 12px;
+    align-items:center;
+    margin-bottom: 14px;
+  }
+  .row label{
+    flex: 0 0 130px;
+    font-size: 14px;
+  }
+  .row input{
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed #9a917a;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 4px 2px;
+    color: var(--ink);
+    outline: none;
+  }
+  .row input:focus{ border-bottom-color: var(--red-pen); }
+
+  .error{
+    font-size: 12px;
+    color: var(--red-pen);
+    min-height: 16px;
+    margin: -8px 0 6px 142px;
+  }
+
+  button{
+    margin-top: 14px;
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  button:hover{ background: #000; }
+
+  #result{
+    margin-top: 22px;
+    display: none;
+  }
+
+  .stamp{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 78px; height: 78px;
+    border: 3px solid var(--red-pen);
+    border-radius: 50%;
+    color: var(--red-pen);
+    font-family: Georgia, serif;
+    font-size: 30px;
+    font-weight: bold;
+    transform: rotate(-8deg) scale(0);
+    float: right;
+    animation: stamp .35s ease forwards .1s;
+  }
+  @keyframes stamp{
+    to{ transform: rotate(-8deg) scale(1); }
+  }
+
+  #summaryText{ font-size: 14px; line-height: 1.7; }
+  #summaryText b{ color: var(--red-pen); }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp{ animation: none; transform: rotate(-8deg) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Term Report</p>
+  <h1>Grade Calculator</h1>
+
+  <form id="gradeForm" novalidate>
+    <div class="row">
+      <label for="math">Mathematics</label>
+      <input type="text" id="math" placeholder="0–100">
+    </div>
+    <div class="error" id="err-math"></div>
+
+    <div class="row">
+      <label for="science">Science</label>
+      <input type="text" id="science" placeholder="0–100">
+    </div>
+    <div class="error" id="err-science"></div>
+
+    <div class="row">
+      <label for="english">English</label>
+      <input type="text" id="english" placeholder="0–100">
+    </div>
+    <div class="error" id="err-english"></div>
+
+    <div class="row">
+      <label for="history">History</label>
+      <input type="text" id="history" placeholder="0–100">
+    </div>
+    <div class="error" id="err-history"></div>
+
+    <div class="row">
+      <label for="computer">Computer Sci.</label>
+      <input type="text" id="computer" placeholder="0–100">
+    </div>
+    <div class="error" id="err-computer"></div>
+
+    <button type="submit">Calculate result</button>
+  </form>
+
+  <div id="result">
+    <div class="stamp" id="stampGrade"></div>
+    <div id="summaryText"></div>
+  </div>
+</div>
+
+<script>
+  const subjects = ["math", "science", "english", "history", "computer"];
+  const form = document.getElementById("gradeForm");
+  const resultBox = document.getElementById("result");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    let marks = [];
+    let isValid = true;
+
+    // --- Form validation using a loop + if/else control structures ---
+    for (const subject of subjects) {
+      const input = document.getElementById(subject);
+      const errorEl = document.getElementById("err-" + subject);
+      const raw = input.value.trim();
+      errorEl.textContent = "";
+
+      if (raw === "") {
+        errorEl.textContent = "Enter a mark.";
+        isValid = false;
+        continue;
+      }
+
+      const value = Number(raw);
+
+      if (isNaN(value)) {
+        errorEl.textContent = "Numbers only.";
+        isValid = false;
+      } else if (value < 0 || value > 100) {
+        errorEl.textContent = "Must be between 0 and 100.";
+        isValid = false;
+      } else {
+        marks.push(value);
+      }
+    }
+
+    if (!isValid) {
+      resultBox.style.display = "none";
+      return;
+    }
+
+    // --- Compute average ---
+    let total = 0;
+    for (const m of marks) {
+      total += m;
+    }
+    const average = total / marks.length;
+
+    // --- Grade assignment using if / else if / else ---
+    let grade;
+    if (average >= 90) {
+      grade = "A+";
+    } else if (average >= 80) {
+      grade = "A";
+    } else if (average >= 70) {
+      grade = "B";
+    } else if (average >= 60) {
+      grade = "C";
+    } else if (average >= 50) {
+      grade = "D";
+    } else {
+      grade = "F";
+    }
+
+    // --- Remark using switch/case control structure ---
+    let remark;
+    switch (grade) {
+      case "A+":
+        remark = "Outstanding performance.";
+        break;
+      case "A":
+        remark = "Excellent work.";
+        break;
+      case "B":
+        remark = "Good, solid effort.";
+        break;
+      case "C":
+        remark = "Satisfactory, room to improve.";
+        break;
+      case "D":
+        remark = "Passing, but needs attention.";
+        break;
+      default:
+        remark = "Failing — please seek extra support.";
+    }
+
+    const passStatus = average >= 50 ? "PASS" : "FAIL";
+
+    // Re-trigger stamp animation
+    const stampEl = document.getElementById("stampGrade");
+    stampEl.style.animation = "none";
+    void stampEl.offsetWidth;
+    stampEl.style.animation = "";
+    stampEl.textContent = grade;
+
+    document.getElementById("summaryText").innerHTML =
+      "<b>Average:</b> " + average.toFixed(2) + " / 100<br>" +
+      "<b>Status:</b> " + passStatus + "<br>" +
+      "<b>Remark:</b> " + remark;
+
+    resultBox.style.display = "block";
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Palindrome Checker</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; }
+  input { padding: 8px; width: 70%; }
+  button { padding: 8px 14px; }
+  #result { margin-top: 15px; font-weight: bold; }
+  #log { margin-top: 20px; font-size: 13px; color: #555; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<h2>Palindrome Checker</h2>
+<input type="text" id="inputText" placeholder="Enter a word or phrase">
+<button onclick="handleCheck()">Check</button>
+<div id="result"></div>
+<div id="log"></div>
+
+<script>
+  // ---------- GLOBAL SCOPE ----------
+  // This variable lives in global scope, accessible anywhere in the script.
+  let checkCount = 0;
+
+  // ---------- FUNCTION DECLARATION ----------
+  // Declarations are hoisted, so this could even be called before this line.
+  function cleanText(str) {
+    // "str" is a local variable — it only exists inside this function (local scope).
+    return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  // ---------- FUNCTION EXPRESSION ----------
+  // Assigned to a const; not hoisted the same way as a declaration.
+  const isPalindrome = function (str) {
+    const reversed = str.split("").reverse().join("");
+    return str === reversed;
+  };
+
+  // ---------- ARROW FUNCTION ----------
+  // Shorter syntax, commonly used for small helper functions.
+  const formatMessage = (original, result) =>
+    `"${original}" is ${result ? "a palindrome ✅" : "not a palindrome ❌"}`;
+
+  // ---------- CLOSURE ----------
+  // makeLogger() returns an inner function that "remembers" the logEntries
+  // array even after makeLogger() has finished running. That remembered
+  // variable is only reachable through the returned function — a closure.
+  function makeLogger() {
+    const logEntries = []; // private state, not accessible from outside
+
+    return function (entry) {
+      logEntries.push(entry);
+      return logEntries.join("\n");
+    };
+  }
+
+  // Create one logger instance; every call to addLog() shares the same
+  // private logEntries array thanks to the closure.
+  const addLog = makeLogger();
+
+  // ---------- MAIN HANDLER WITH TRY/CATCH ----------
+  function handleCheck() {
+    const resultDiv = document.getElementById("result");
+    const logDiv = document.getElementById("log");
+    const rawInput = document.getElementById("inputText").value;
+
+    try {
+      if (rawInput.trim() === "") {
+        // Manually throw an error for empty input
+        throw new Error("Input cannot be empty.");
+      }
+
+      const cleaned = cleanText(rawInput);
+
+      if (cleaned.length === 0) {
+        throw new Error("No valid letters/numbers found to check.");
+      }
+
+      const result = isPalindrome(cleaned);
+      checkCount++; // modifying the global counter
+
+      resultDiv.textContent = formatMessage(rawInput, result);
+      logDiv.textContent = addLog(`Check #${checkCount}: "${rawInput}" -> ${result}`);
+
+    } catch (error) {
+      // Any thrown error above lands here instead of crashing the script
+      resultDiv.textContent = "Error: " + error.message;
+    }
+  }
+</script>
+
+</body>
+</html>

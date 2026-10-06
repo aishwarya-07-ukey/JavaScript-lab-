@@ -1,0 +1,588 @@
+//SHOPPING PRODUCT CODE//
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ShouSucs</title>
+
+<style>
+
+:root {
+  --navy:#1B2A41;
+  --navy-2:#24374f;
+  --amber:#E8833A;
+  --amber-dark:#C96A26;
+  --cream:#FFF6EC;
+}
+
+*{
+ box-sizing:border-box;
+ margin:0;
+ padding:0;
+}
+
+body{
+ font-family:'Trebuchet MS',Arial;
+ background:var(--cream);
+}
+
+
+header{
+ background:linear-gradient(135deg,var(--navy),var(--navy-2));
+ color:white;
+ padding:28px;
+ text-align:center;
+ border-bottom:5px solid var(--amber);
+}
+
+header h1{
+ font-size:30px;
+}
+
+header h1::before{
+ content:"🎀 ";
+}
+
+
+.container{
+ max-width:1100px;
+ margin:25px auto;
+ padding:15px;
+}
+.products{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:18px;
+}
+.card{
+ background:white;
+ border-radius:12px;
+ overflow:hidden;
+ box-shadow:0 3px 10px #ccc;
+}
+.card img{
+ width:100%;
+ height:250px;
+ object-fit:contain;
+ padding:10px;
+}
+.card-body{
+ padding:15px;
+}
+
+
+.price{
+ color:#C96A26;
+ font-weight:bold;
+}
+
+
+button{
+
+ background:#E8833A;
+ color:white;
+ border:none;
+ padding:10px;
+ width:100%;
+ border-radius:6px;
+ cursor:pointer;
+
+}
+
+
+.cart-btn{
+
+ margin-top:25px;
+ width:200px;
+ font-size:18px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1>ShouSucs</h1>
+
+<p>Step in. Flex out. 💯</p>
+
+</header>
+
+
+
+<div class="container">
+
+
+<section class="products" id="productList">
+
+</section>
+
+
+<center>
+
+<button class="cart-btn" onclick="goCart()">
+🛒 Go To Cart
+</button>
+
+</center>
+
+
+
+</div>
+
+
+
+<script>
+
+
+const products=[
+
+{id:1,name:"Sneakers",price:1499,image:"shoe1.jpg"},
+
+{id:2,name:"Nike Running Shoes",price:3000,image:"shoe2.jpg"},
+
+{id:3,name:"High Knee Shoes",price:22999,image:"shoe3.jpg"},
+
+{id:4,name:"Nike Comfy Shoes",price:5799,image:"shoe4.jpg"},
+
+{id:5,name:"Canva Slide Sandles",price:7999,image:"shoe5.jpg"},
+
+{id:6,name:"Boots",price:4499,image:"shoe6.jpg"}
+
+];
+
+
+
+let cart=[];
+
+
+
+const productList=document.getElementById("productList");
+
+
+
+products.forEach(product=>{
+
+
+let card=document.createElement("div");
+
+card.className="card";
+
+
+card.innerHTML=`
+
+<img src="${product.image}"
+onerror="this.src='https://via.placeholder.com/300x200'">
+
+
+<div class="card-body">
+
+<h3>${product.name}</h3>
+
+<p class="price">
+₹${product.price}
+</p>
+
+
+<br>
+
+<input 
+type="number"
+min="1"
+value="1"
+id="qty-${product.id}">
+
+
+<br><br>
+<button onclick="addCart(${product.id})">
+Add To Cart
+</button>
+</div>
+`;
+productList.appendChild(card);
+});
+function addCart(id){
+let product=products.find(p=>p.id===id);
+let qty=document.getElementById("qty-"+id).value;
+cart.push({
+name:product.name,
+price:product.price,
+qty:Number(qty)
+});
+localStorage.setItem(
+"cart",
+JSON.stringify(cart)
+);
+alert("Added to cart 🛒");
+}
+function goCart(){
+window.location.href="cart.html";
+}
+</script>
+</body>
+</html>
+
+//BILL CART //
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cart - ShouSucs</title>
+
+
+<style>
+
+:root{
+ --navy:#1B2A41;
+ --amber:#E8833A;
+ --green:#2E8B57;
+ --cream:#FFF6EC;
+}
+
+
+*{
+ box-sizing:border-box;
+}
+
+
+body{
+
+font-family:'Trebuchet MS',Arial;
+background:var(--cream);
+
+}
+
+
+
+header{
+
+background:linear-gradient(135deg,#1B2A41,#24374f);
+color:white;
+padding:25px;
+text-align:center;
+border-bottom:5px solid var(--amber);
+
+}
+
+
+
+.bill-box{
+
+background:white;
+width:420px;
+margin:30px auto;
+padding:20px;
+border-radius:12px;
+box-shadow:0 3px 10px #ccc;
+
+}
+
+
+
+h2{
+
+color:var(--navy);
+
+}
+
+
+
+label{
+
+display:block;
+margin-top:12px;
+font-weight:bold;
+
+}
+
+
+
+input,select{
+
+width:100%;
+padding:8px;
+margin-top:5px;
+
+}
+
+
+
+#cartList{
+
+margin-top:15px;
+border-top:1px dashed #aaa;
+padding-top:10px;
+
+}
+
+
+
+.row{
+
+display:flex;
+justify-content:space-between;
+margin:8px 0;
+
+}
+
+
+
+.total{
+
+font-size:20px;
+font-weight:bold;
+color:var(--green);
+
+}
+
+
+
+button{
+
+width:100%;
+padding:12px;
+margin-top:15px;
+background:var(--green);
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+
+}
+
+
+
+#invoiceBox{
+
+display:none;
+background:#f2fbf5;
+border:1px dashed green;
+padding:12px;
+margin-top:15px;
+
+}
+
+
+
+</style>
+
+
+</head>
+
+
+
+<body>
+
+
+
+<header>
+
+<h1>🛒 ShouSucs Cart</h1>
+
+<p>Your order summary</p>
+
+</header>
+
+
+
+
+<div class="bill-box">
+
+
+<h2>🧾 Bill Section</h2>
+
+
+
+<label>
+Customer Name
+</label>
+
+<input id="custName" placeholder="Enter name">
+
+
+
+<label>
+Mobile Number
+</label>
+
+<input id="mobileNum" placeholder="Mobile number">
+
+
+
+<label>
+Discount (%)
+</label>
+
+<input id="discount" type="number" value="0">
+
+
+
+<label>
+GST (%)
+</label>
+
+<input id="gst" type="number" value="18">
+
+
+
+<label>
+Packing Charges
+</label>
+
+<input id="packing" type="number" value="50">
+
+
+
+<label>
+Payment Mode
+</label>
+
+<select id="payMode">
+
+<option>Cash</option>
+<option>Card</option>
+<option>UPI</option>
+
+</select>
+<div id="cartList">
+
+</div>
+<div class="row">
+
+<span>Subtotal</span>
+
+<span id="subtotal">₹0</span>
+
+</div>
+<div class="row">
+
+<span>Discount</span>
+
+<span id="discountOut">₹0</span>
+
+</div>
+<div class="row">
+
+<span>GST</span>
+
+<span id="gstOut">₹0</span>
+
+</div>
+<div class="row">
+
+<span>Packing</span>
+
+<span id="packingOut">₹0</span>
+
+</div>
+<div class="row total">
+
+<span>Total</span>
+
+<span id="total">₹0</span>
+
+</div>
+<button onclick="generateBill()">
+
+Generate Bill
+
+</button>
+<div id="invoiceBox"></div>
+
+
+
+</div>
+
+<script>
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
+
+let cartList=document.getElementById("cartList");
+
+let subtotal=0;
+
+cart.forEach(item=>{
+
+
+let amount=item.price*item.qty;
+
+
+subtotal+=amount;
+
+
+
+cartList.innerHTML += `
+
+<p>
+${item.name} x ${item.qty}
+=
+₹${amount}
+
+</p>
+
+`;
+
+});
+
+document.getElementById("subtotal").innerHTML=
+"₹"+subtotal;
+function generateBill(){
+let discount=
+Number(document.getElementById("discount").value);
+let gst=
+Number(document.getElementById("gst").value);
+let packing=
+Number(document.getElementById("packing").value);
+let discountAmount=
+subtotal*discount/100;
+let afterDiscount=
+subtotal-discountAmount;
+let gstAmount=
+afterDiscount*gst/100;
+let total=
+afterDiscount+gstAmount+packing;
+
+document.getElementById("discountOut").innerHTML=
+"- ₹"+discountAmount;
+document.getElementById("gstOut").innerHTML=
+"+ ₹"+gstAmount;
+document.getElementById("packingOut").innerHTML=
+"+ ₹"+packing;
+document.getElementById("total").innerHTML=
+"₹"+total;
+document.getElementById("invoiceBox").style.display="block";
+document.getElementById("invoiceBox").innerHTML=
+`
+<b>Invoice Generated ✅</b><br><br>
+Customer:
+${document.getElementById("custName").value}
+<br>
+Mobile:
+${document.getElementById("mobileNum").value}
+<br>
+Payment:
+${document.getElementById("payMode").value}
+<br><br>
+Total Paid:
+₹${total}
+`;
+}
+</script>
+
+</body>
+</html>

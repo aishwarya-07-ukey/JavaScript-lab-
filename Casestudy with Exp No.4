@@ -1,0 +1,519 @@
+//study vs instagram calculations
+
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Study vs Instagram Calculator</title>
+
+    <style>
+
+        /* =========================
+           PAGE DESIGN
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff4e6;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+        }
+
+
+        /* =========================
+           CARD
+        ========================= */
+
+        .card {
+            background: #ffffff;
+
+            padding: 35px;
+
+            border-radius: 20px;
+
+            box-shadow: 0 8px 25px rgba(120, 70, 20, 0.12);
+
+            border: 1px solid #ffe0bd;
+        }
+
+
+        /* =========================
+           HEADING
+        ========================= */
+
+        h1 {
+            text-align: center;
+
+            color: #d86f00;
+
+            margin-bottom: 8px;
+
+            font-size: 30px;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #777;
+
+            margin-bottom: 30px;
+
+            font-size: 15px;
+        }
+
+
+        /* =========================
+           INPUT BOX
+        ========================= */
+
+        .input-box {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+
+            font-weight: bold;
+
+            color: #444;
+
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 13px;
+
+            border: 2px solid #ffd6ad;
+
+            border-radius: 9px;
+
+            font-size: 16px;
+
+            background: #fffaf5;
+        }
+
+        input:focus {
+            outline: none;
+
+            border-color: #f4a261;
+
+            background: #ffffff;
+        }
+
+
+        /* =========================
+           BUTTON
+        ========================= */
+
+        button {
+            width: 100%;
+
+            padding: 14px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #f4a261;
+
+            color: white;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #e8893f;
+
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================
+           RESULT
+        ========================= */
+
+        .result {
+            margin-top: 25px;
+
+            padding: 22px;
+
+            background: #fff8f0;
+
+            border: 1px solid #ffe0bd;
+
+            border-radius: 12px;
+
+            display: none;
+        }
+
+        .result h2 {
+            text-align: center;
+
+            color: #d86f00;
+
+            margin-bottom: 18px;
+        }
+
+        .result p {
+            color: #444;
+
+            margin: 10px 0;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           MESSAGE
+        ========================= */
+
+        .message {
+            margin-top: 18px;
+
+            padding: 13px;
+
+            background: #ffe8d1;
+
+            border-radius: 9px;
+
+            text-align: center;
+
+            color: #a94f00;
+
+            font-weight: bold;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           CASE STUDY
+        ========================= */
+
+        .case-study {
+            margin-top: 22px;
+
+            padding: 20px;
+
+            background: #fffaf5;
+
+            border-left: 5px solid #f4a261;
+
+            border-radius: 10px;
+        }
+
+        .case-study h3 {
+            color: #d86f00;
+
+            margin-bottom: 10px;
+        }
+
+        .case-study p {
+            color: #666;
+
+            line-height: 1.6;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 500px) {
+
+            .card {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- MAIN PAGE -->
+
+    <div class="container">
+
+        <div class="card">
+
+            <!-- TITLE -->
+
+            <h1>📚 Study vs Instagram 📱</h1>
+
+            <p class="subtitle">
+                Compare your study time with your Instagram time
+            </p>
+
+
+            <!-- STUDY INPUT -->
+
+            <div class="input-box">
+
+                <label for="studyTime">
+                    📚 Study Time (Hours)
+                </label>
+
+                <input
+                    type="number"
+                    id="studyTime"
+                    placeholder="Enter study hours"
+                    min="0"
+                    step="0.5"
+                >
+
+            </div>
+
+
+            <!-- INSTAGRAM INPUT -->
+
+            <div class="input-box">
+
+                <label for="instaTime">
+                    📱 Instagram Time (Hours)
+                </label>
+
+                <input
+                    type="number"
+                    id="instaTime"
+                    placeholder="Enter Instagram hours"
+                    min="0"
+                    step="0.5"
+                >
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button onclick="calculateTime()">
+                Compare My Time
+            </button>
+
+
+            <!-- RESULT SECTION -->
+
+            <div class="result" id="result">
+
+                <h2>📊 Your Result</h2>
+
+                <p id="studyResult"></p>
+
+                <p id="instaResult"></p>
+
+                <p id="totalResult"></p>
+
+                <p id="studyPercentage"></p>
+
+                <p id="instaPercentage"></p>
+
+                <div class="message" id="message"></div>
+
+            </div>
+
+
+            <!-- CASE STUDY -->
+
+            <div class="case-study">
+
+                <h3>📖 About This Case Study</h3>
+
+                <p>
+                    This calculator helps students compare the amount of
+                    time they spend studying with the amount of time they
+                    spend on Instagram.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
+
+    <script>
+
+        function calculateTime() {
+
+            // Get input values
+
+            let study = parseFloat(
+                document.getElementById("studyTime").value
+            );
+
+            let insta = parseFloat(
+                document.getElementById("instaTime").value
+            );
+
+
+            // Validate input
+
+            if (
+                isNaN(study) ||
+                isNaN(insta) ||
+                study < 0 ||
+                insta < 0
+            ) {
+
+                alert("Please enter valid time values.");
+
+                return;
+            }
+
+
+            // Calculate total time
+
+            let totalTime = study + insta;
+
+
+            // Prevent division by zero
+
+            if (totalTime === 0) {
+
+                alert("Please enter at least one time value.");
+
+                return;
+            }
+
+
+            // Calculate percentages
+
+            let studyPercentage =
+                (study / totalTime) * 100;
+
+            let instaPercentage =
+                (insta / totalTime) * 100;
+
+
+            // Display study time
+
+            document.getElementById("studyResult").innerHTML =
+                "📚 Study Time: <b>" +
+                study +
+                " hours</b>";
+
+
+            // Display Instagram time
+
+            document.getElementById("instaResult").innerHTML =
+                "📱 Instagram Time: <b>" +
+                insta +
+                " hours</b>";
+
+
+            // Display total time
+
+            document.getElementById("totalResult").innerHTML =
+                "⏱️ Total Time: <b>" +
+                totalTime +
+                " hours</b>";
+
+
+            // Display study percentage
+
+            document.getElementById("studyPercentage").innerHTML =
+                "📚 Study Percentage: <b>" +
+                studyPercentage.toFixed(1) +
+                "%</b>";
+
+
+            // Display Instagram percentage
+
+            document.getElementById("instaPercentage").innerHTML =
+                "📱 Instagram Percentage: <b>" +
+                instaPercentage.toFixed(1) +
+                "%</b>";
+
+
+            // Compare both times
+
+            let message;
+
+
+            if (study > insta) {
+
+                message =
+                    "📚 Great! Your study time is higher than your Instagram time.";
+
+            }
+
+            else if (insta > study) {
+
+                message =
+                    "📱 Your Instagram time is higher than your study time.";
+
+            }
+
+            else {
+
+                message =
+                    "⚖️ Your study time and Instagram time are equal.";
+
+            }
+
+
+            // Display message
+
+            document.getElementById("message").innerHTML =
+                message;
+
+
+            // Show result
+
+            document.getElementById("result").style.display =
+                "block";
+        }
+
+    </script>
+
+</body>
+
+</html>
+```

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIT Nagpur - Department of Computer Science</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  body {
+    background-color: #f8f5f0;
+    background-image:
+      linear-gradient(rgba(139,0,0,0.75), rgba(139,0,0,0.75)),
+      url("campus.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .logo-badge {
+    width: 70px;
+    height: 70px;
+    border: 3px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 22px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(24px, 4vw, 40px);
+    letter-spacing: 1px;
+  }
+
+  .sub {
+    margin: 6px 0 0;
+    font-size: 15px;
+    opacity: 0.9;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: white;
+    margin: 18px 0;
+    border-radius: 2px;
+  }
+
+  .dept-card {
+    background: rgba(255,255,255,0.97);
+    color: #333;
+    border-radius: 14px;
+    padding: 22px 30px;
+    max-width: 480px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+
+  .dept-card h2 {
+    color: #8b0000;
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .dept-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+  }
+
+  .btn {
+    display: inline-block;
+    margin-top: 18px;
+    background: #8b0000;
+    color: white;
+    text-decoration: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .btn:hover {
+    background: #a30000;
+    transform: translateY(-2px);
+  }
+
+  footer {
+    position: absolute;
+    bottom: 14px;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+</style>
+<script>
+  window.onload = function () {
+    alert("Welcome to SIT Nagpur");
+  };
+</script>
+</head>
+<body>
+
+  <div class="logo-badge">SIT</div>
+  <h1>Symbiosis Institute of Technology</h1>
+  <p class="sub">Nagpur &nbsp;|&nbsp; Department of Computer Science &amp; Engineering</p>
+  <div class="divider"></div>
+
+  <div class="dept-card">
+    <h2>Computer Science &amp; Engineering</h2>
+    <p>
+      The CSE department focuses on programming, artificial intelligence,
+      cybersecurity and modern software engineering practices, preparing
+      students for real-world technology careers.
+    </p>
+    <a class="btn" href="student-info.html">View Student Info</a>
+  </div>
+
+  <footer>&copy; 2026 SIT Nagpur &mdash; Practical 1 (JavaScript)</footer>
+
+</body>
+</html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Info - SIT Nagpur</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  body {
+    background-color: #f8f5f0;
+    background-image:
+      linear-gradient(rgba(139,0,0,0.06), rgba(139,0,0,0.06)),
+      repeating-linear-gradient(-45deg, rgba(139,0,0,0.04) 0px, rgba(139,0,0,0.04) 2px, transparent 2px, transparent 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    border-top: 6px solid #8b0000;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+
+  .card-header {
+    background: #8b0000;
+    color: white;
+    padding: 18px 24px;
+  }
+
+  .card-header h1 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .card-header p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #8b0000;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 18px auto 4px;
+    border: 3px solid #f4d7d7;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+
+  table td {
+    padding: 8px 24px;
+    border-bottom: 1px solid #eee;
+  }
+
+  table td.label {
+    color: #8b0000;
+    font-weight: bold;
+    width: 40%;
+  }
+
+  .btn {
+    display: block;
+    text-align: center;
+    margin: 18px 24px 22px;
+    background: #8b0000;
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="card-header">
+      <h1>Student Information</h1>
+      <p>Department of Computer Science &amp; Engineering</p>
+    </div>
+
+    <div class="avatar">SH</div>
+
+    <table>
+      <tr><td class="label">Name</td><td>Renuka Pedhekar</td></tr>
+      <tr><td class="label">Roll No.</td><td>24070521259</td></tr>
+      <tr><td class="label">Semester</td><td>V</td></tr>
+      <tr><td class="label">Batch</td><td>2024-28</td></tr>
+      <tr><td class="label">Subject</td><td>JavaScript</td></tr>
+    </table>
+
+    <a class="btn" href="index.html">&larr; Back to Home</a>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cart Total Calculator</title>
+<style>
+  :root {
+    --ink: #1b1b1f;
+    --muted: #6b6f76;
+    --line: #e3e3e6;
+    --accent: #2f6f4f;
+    --accent-soft: #e7f3ec;
+    --danger: #b3452c;
+    --bg-card: #ffffff;
+    --bg-page: #f4f4f2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--bg-page);
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 620px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 30px 34px 34px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 22px;
+  }
+  form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  form input#itemName { flex: 1 1 auto; }
+  form input#itemQty { flex: 0 0 70px; }
+  form input#itemPrice { flex: 0 0 100px; }
+  input {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 10px;
+    font-size: 14px;
+    width: 100%;
+    font-family: inherit;
+  }
+  button {
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #addBtn { background: var(--ink); color: #fff; }
+  #addBtn:hover { background: #000; }
+  .error {
+    color: var(--danger);
+    font-size: 13px;
+    margin: -12px 0 16px;
+    min-height: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+  }
+  th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 8px;
+  }
+  th:not(:first-child), td:not(:first-child) { text-align: right; }
+  td {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  td.remove {
+    text-align: right;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 12px;
+    width: 20px;
+  }
+  .empty-row td {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  .summary { font-size: 14px; }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+  }
+  .summary-row.total {
+    font-size: 18px;
+    font-weight: 700;
+    border-top: 1px solid var(--ink);
+    margin-top: 8px;
+    padding-top: 12px;
+  }
+  .discount-val { color: var(--danger); }
+  .tier-badge {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+  }
+  .log {
+    margin-top: 24px;
+    border-top: 1px dashed var(--line);
+    padding-top: 14px;
+  }
+  .log h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .log-entry {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+    color: #4a4d52;
+    padding: 3px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <h1>Cart Total Calculator</h1>
+  <p class="subtitle">Array methods + object handling + tiered discount logic</p>
+
+  <form id="addForm">
+    <input type="text" id="itemName" placeholder="Item name" required>
+    <input type="number" id="itemQty" placeholder="Qty" min="1" required>
+    <input type="number" id="itemPrice" placeholder="Price (₹)" min="0" step="0.01" required>
+    <button type="submit" id="addBtn">Add Item</button>
+  </form>
+  <div class="error" id="errorMsg"></div>
+
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th><th></th></tr>
+    </thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+
+  <div class="summary">
+    <div class="summary-row"><span>Subtotal</span><span id="subtotalVal">₹0.00</span></div>
+    <div class="summary-row">
+      <span>Discount<span class="tier-badge" id="tierBadge">0%</span></span>
+      <span class="discount-val" id="discountVal">-₹0.00</span>
+    </div>
+    <div class="summary-row total"><span>Total Payable</span><span id="totalVal">₹0.00</span></div>
+  </div>
+
+  <div class="log">
+    <h2>Session Log</h2>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  // ---------- Object handling: cart items are stored as objects in an array ----------
+  let cart = [];
+
+  // Closure: createLogger() returns a function that remembers `count` and
+  // `entries` between calls, even though createLogger() itself has finished running.
+  function createLogger() {
+    let count = 0;
+    let entries = [];
+    return function (message) {
+      count++;
+      entries = [...entries, `Check #${count}: ${message}`];
+      return entries;
+    };
+  }
+  const logEntry = createLogger();
+
+  function getDiscountRate(subtotal) {
+    if (subtotal >= 5000) return 0.20;
+    if (subtotal >= 2000) return 0.10;
+    return 0;
+  }
+
+  function calculateCart() {
+    // filter() removes any invalid/zero-quantity items defensively
+    // map() converts each item object into its line subtotal
+    // reduce() aggregates the subtotals into a single cart subtotal
+    const subtotal = cart
+      .filter(item => item.qty > 0)
+      .map(item => item.price * item.qty)
+      .reduce((total, amount) => total + amount, 0);
+
+    const discountRate = getDiscountRate(subtotal);
+    const discountAmount = subtotal * discountRate;
+    const total = subtotal - discountAmount;
+
+    return { subtotal, discountRate, discountAmount, total };
+  }
+
+  function render() {
+    const tbody = document.getElementById('itemsBody');
+    tbody.innerHTML = '';
+
+    if (cart.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Cart is empty — add an item above</td></tr>';
+    } else {
+      cart.forEach((item, index) => {
+        // Object destructuring to pull fields out of each cart item object
+        const { name, qty, price } = item;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${qty}</td>
+          <td>₹${price.toFixed(2)}</td>
+          <td>₹${(price * qty).toFixed(2)}</td>
+          <td class="remove" data-index="${index}">✕</td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    const { subtotal, discountRate, discountAmount, total } = calculateCart();
+    document.getElementById('subtotalVal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('discountVal').textContent = `-₹${discountAmount.toFixed(2)}`;
+    document.getElementById('tierBadge').textContent = `${Math.round(discountRate * 100)}%`;
+    document.getElementById('totalVal').textContent = `₹${total.toFixed(2)}`;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.remove'), function (el) {
+      el.addEventListener('click', function () {
+        var idx = Number(el.getAttribute('data-index'));
+        cart = cart.filter(function (_, i) { return i !== idx; }); // filter() removes by index
+        render();
+      });
+    });
+  }
+
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = '';
+
+    try {
+      const name = document.getElementById('itemName').value.trim();
+      const qty = Number(document.getElementById('itemQty').value);
+      const price = Number(document.getElementById('itemPrice').value);
+
+      if (!name) throw new Error('Item name cannot be empty');
+      if (!qty || qty <= 0) throw new Error('Quantity must be greater than 0');
+      if (price < 0 || Number.isNaN(price)) throw new Error('Price must be a valid, non-negative number');
+
+      // New item object added to the cart array (spread used to keep future updates immutable)
+      cart = [...cart, { name, qty, price }];
+
+      const { subtotal, discountRate, total } = calculateCart();
+      const entries = logEntry(
+        `Added "${name}" -> Subtotal ₹${subtotal.toFixed(2)} -> Tier ${Math.round(discountRate * 100)}% -> Total ₹${total.toFixed(2)}`
+      );
+
+      this.reset();
+      render();
+      renderLogList(entries);
+    } catch (err) {
+      errorMsg.textContent = err.message; // caught by try-catch, shown to the user
+    } finally {
+      document.getElementById('itemName').focus();
+    }
+  });
+
+  function renderLogList(entries) {
+    document.getElementById('logList').innerHTML =
+      entries.map(e => `<div class="log-entry">${e}</div>`).join('');
+  }
+
+  render();
+</script>
+
+</body>
+</html>
