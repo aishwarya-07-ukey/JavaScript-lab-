@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saving preferences with Web Storage</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --surface: #ffffff; --text: #1c2430; --muted: #5d6b7c;
+    --accent: #2563eb; --border: #d5dce6; --font-size: 16px;
+  }
+  [data-theme="dark"] {
+    --bg: #12161d; --surface: #1b212b; --text: #e8edf4; --muted: #9aa8ba;
+    --accent: #6ea0ff; --border: #2f3846;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem; background: var(--bg); color: var(--text);
+    font-family: system-ui, sans-serif; font-size: var(--font-size); line-height: 1.5;
+    transition: background .2s, color .2s;
+  }
+  main { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 1.5em; margin: 0 0 .25em; }
+  p.lead { color: var(--muted); margin-top: 0; }
+  section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem; margin-top: 1rem;
+  }
+  h2 { font-size: 1.05em; margin: 0 0 .75rem; }
+  label { display: block; margin: .6rem 0 .25rem; color: var(--muted); font-size: .9em; }
+  select, input[type="text"] {
+    width: 100%; padding: .5rem; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  }
+  button {
+    margin-top: .9rem; padding: .5rem .9rem; font: inherit; cursor: pointer;
+    color: #fff; background: var(--accent); border: 0; border-radius: 6px;
+  }
+  button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code { background: var(--bg); padding: .1em .35em; border-radius: 4px; }
+  #status { min-height: 1.4em; color: var(--muted); font-size: .9em; margin-top: .5rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Preferences</h1>
+  <p class="lead">Theme and text size are kept after you close the browser. The draft note only lasts for this tab.</p>
+
+  <section>
+    <h2>Saved permanently (localStorage)</h2>
+    <label for="theme">Theme</label>
+    <select id="theme">
+      <option value="system">Match my device</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+
+    <label for="fontSize">Text size</label>
+    <select id="fontSize">
+      <option value="14">Small</option>
+      <option value="16">Medium</option>
+      <option value="19">Large</option>
+    </select>
+  </section>
+
+  <section>
+    <h2>Saved for this tab only (sessionStorage)</h2>
+    <label for="draft">Draft note</label>
+    <input type="text" id="draft" placeholder="Type something, then refresh the page">
+  </section>
+
+  <button id="reset" class="secondary">Reset all preferences</button>
+  <div id="status" role="status" aria-live="polite"></div>
+</main>
+
+<script>
+  // ---- Safe storage helpers: storage can be blocked or full, so never assume it works ----
+  const store = {
+    get(area, key, fallback = null) {
+      try {
+        const raw = area.getItem(key);
+        return raw === null ? fallback : JSON.parse(raw);
+      } catch { return fallback; }
+    },
+    set(area, key, value) {
+      try { area.setItem(key, JSON.stringify(value)); return true; }
+      catch { return false; }
+    },
+    remove(area, key) {
+      try { area.removeItem(key); } catch {}
+    }
+  };
+
+  const PREFS_KEY = 'app:preferences';
+  const DRAFT_KEY = 'app:draft';
+  const defaults = { theme: 'system', fontSize: '16' };
+
+  const themeEl = document.getElementById('theme');
+  const sizeEl  = document.getElementById('fontSize');
+  const draftEl = document.getElementById('draft');
+  const statusEl = document.getElementById('status');
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  let prefs = { ...defaults, ...store.get(localStorage, PREFS_KEY, {}) };
+
+  function applyPrefs() {
+    const dark = prefs.theme === 'dark' || (prefs.theme === 'system' && darkQuery.matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.style.setProperty('--font-size', prefs.fontSize + 'px');
+    themeEl.value = prefs.theme;
+    sizeEl.value = prefs.fontSize;
+  }
+
+  function savePrefs() {
+    const ok = store.set(localStorage, PREFS_KEY, prefs);
+    statusEl.textContent = ok ? 'Preferences saved.' : 'Could not save. Storage is unavailable in this browser.';
+  }
+
+  themeEl.addEventListener('change', () => { prefs.theme = themeEl.value; applyPrefs(); savePrefs(); });
+  sizeEl.addEventListener('change',  () => { prefs.fontSize = sizeEl.value; applyPrefs(); savePrefs(); });
+
+  // Follow the device setting live when the theme is "system"
+  darkQuery.addEventListener('change', () => { if (prefs.theme === 'system') applyPrefs(); });
+
+  // Session-only draft
+  draftEl.value = store.get(sessionStorage, DRAFT_KEY, '');
+  draftEl.addEventListener('input', () => store.set(sessionStorage, DRAFT_KEY, draftEl.value));
+
+  // Keep other open tabs in sync when localStorage changes
+  window.addEventListener('storage', (e) => {
+    if (e.key === PREFS_KEY) {
+      prefs = { ...defaults, ...store.get(localStorage, PREFS_KEY, {}) };
+      applyPrefs();
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    store.remove(localStorage, PREFS_KEY);
+    store.remove(sessionStorage, DRAFT_KEY);
+    prefs = { ...defaults };
+    draftEl.value = '';
+    applyPrefs();
+    statusEl.textContent = 'Preferences reset.';
+  });
+
+  applyPrefs();
+</script>
+</body>
+</html>
