@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gym admission form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ==========================================================
+   1. DESIGN TOKENS
+   Plate colours follow the standard weight-plate colour code,
+   and are used for the membership plan picker.
+   ========================================================== */
+:root {
+  --floor: #E4E7EB;
+  --paper: #FFFFFF;
+  --ink: #1A1E26;
+  --muted: #586170;
+  --line: #C8CDD5;
+  --line-soft: #E3E6EB;
+  --blue: #1F5FBF;
+  --ok: #17803F;
+  --bad: #C62839;
+
+  --plate-green: #2E9E5B;
+  --plate-yellow: #F0B400;
+  --plate-blue: #2A62C9;
+  --plate-red: #D42A3C;
+
+  --display: 'Big Shoulders Display', Impact, 'Arial Narrow', sans-serif;
+  --body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--floor);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--body);
+}
+
+/* ==========================================================
+   2. PAGE LAYOUT
+   ========================================================== */
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 960px) {
+  .page { grid-template-columns: 360px 1fr; align-items: start; padding-top: 56px; }
+  .side { position: sticky; top: 32px; }
+}
+
+.brand {
+  font: 800 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  margin: 0 0 20px;
+}
+
+h1 {
+  font: 800 clamp(48px, 9vw, 68px)/0.92 var(--display);
+  letter-spacing: 0;
+  margin: 0 0 14px;
+}
+
+.intro { color: var(--muted); margin: 0 0 28px; max-width: 34ch; }
+
+/* ==========================================================
+   3. LIVE MEMBERSHIP SLIP (updates as the user types)
+   ========================================================== */
+.slip {
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 22px 22px 20px;
+  border-top: 6px solid var(--ink);
+}
+
+.slip h2 { font: 700 24px/1 var(--display); margin: 0 0 14px; }
+
+.slip-row { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; font-size: 15px; }
+.slip-row .k { color: var(--muted); }
+.slip-row .dots { flex: 1; border-bottom: 2px dotted var(--line); transform: translateY(-3px); }
+.slip-row .v { font-weight: 600; text-align: right; overflow-wrap: anywhere; max-width: 60%; }
+
+.slip-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--ink); }
+.slip-total .k { font-weight: 600; }
+.slip-total .v { font: 800 38px/1 var(--display); }
+
+.progress { margin-top: 20px; }
+.progress p { margin: 0 0 8px; font-size: 13.5px; color: var(--muted); }
+.bar { height: 8px; background: var(--line-soft); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .25s ease; }
+.bar.done > i { background: var(--ok); }
+
+/* ==========================================================
+   4. FORM SURFACE
+   ========================================================== */
+.sheet {
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 28px 22px 32px;
+}
+@media (min-width: 640px) { .sheet { padding: 40px 44px 44px; } }
+
+.section + .section { margin-top: 40px; padding-top: 36px; border-top: 1px solid var(--line-soft); }
+.section h2 { font: 700 30px/1 var(--display); margin: 0 0 22px; }
+
+.row { display: grid; gap: 20px; grid-template-columns: 1fr; margin-bottom: 20px; }
+.row:last-child { margin-bottom: 0; }
+@media (min-width: 640px) { .row.two { grid-template-columns: 1fr 1fr; } }
+
+.field { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+
+label, legend.label {
+  display: block;
+  padding: 0;
+  margin-bottom: 7px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.opt { font-weight: 400; color: var(--muted); }
+.count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.count.over { color: var(--bad); font-weight: 600; }
+
+input[type="text"], input[type="email"], input[type="tel"],
+input[type="number"], input[type="date"], textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  color-scheme: light;
+  transition: border-color .15s, box-shadow .15s;
+}
+textarea { resize: vertical; min-height: 96px; }
+input::placeholder, textarea::placeholder { color: #8A93A1; }
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(31, 95, 191, .18);
+}
+
+/* Validation states are applied by JavaScript to the .field wrapper */
+.field.is-invalid input[type="text"], .field.is-invalid input[type="email"],
+.field.is-invalid input[type="tel"], .field.is-invalid input[type="number"],
+.field.is-invalid input[type="date"], .field.is-invalid textarea { border-color: var(--bad); }
+.field.is-valid input[type="text"], .field.is-valid input[type="email"],
+.field.is-valid input[type="tel"], .field.is-valid input[type="number"],
+.field.is-valid input[type="date"], .field.is-valid textarea { border-color: var(--ok); }
+
+.msg { min-height: 20px; margin: 6px 0 0; font-size: 13.5px; }
+.field.is-invalid .msg { color: var(--bad); }
+.field.is-valid .msg { color: var(--ok); }
+.field.is-invalid .msg::before { content: "\2715\00a0"; font-weight: 700; }
+.field.is-valid .msg::before { content: "\2713\00a0"; font-weight: 700; }
+.msg:empty::before { display: none; }
+
+/* ---------- Pill choices (gender, goals) ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { position: relative; }
+.chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.chip span {
+  display: inline-block;
+  padding: 9px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chip input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chip input:focus-visible + span { outline: 3px solid rgba(31, 95, 191, .45); outline-offset: 2px; }
+.field.is-invalid .chip span { border-color: var(--bad); }
+
+/* ---------- Plan picker: weight plates ---------- */
+.plans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 560px) { .plans { grid-template-columns: repeat(4, 1fr); } }
+
+.plan { position: relative; display: block; margin: 0; cursor: pointer; }
+.plan input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+
+.plan-body {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 16px 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.plan-name { font-weight: 600; font-size: 15px; margin-top: 10px; }
+.plan-price { font-size: 14px; color: var(--muted); }
+
+.plate {
+  --c: var(--plate-green); --on: #fff;
+  position: relative;
+  width: 68px; aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--c); color: var(--on);
+  font: 800 30px/1 var(--display);
+  transition: transform .45s cubic-bezier(.3, 1.4, .5, 1);
+}
+.plate::before { /* the raised inner ring of a bumper plate */
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  border: 2px solid currentColor; opacity: .5;
+}
+.plate.green  { --c: var(--plate-green); }
+.plate.yellow { --c: var(--plate-yellow); --on: var(--ink); }
+.plate.blue   { --c: var(--plate-blue); }
+.plate.red    { --c: var(--plate-red); }
+
+.plan:hover .plan-body { border-color: var(--ink); }
+.plan input:checked ~ .plan-body { border-color: var(--ink); border-width: 2px; padding: 15.5px 7.5px 13.5px; background: #F5F6F8; }
+.plan input:checked ~ .plan-body .plate { transform: rotate(180deg) scale(1.08); }
+.plan input:focus-visible ~ .plan-body { outline: 3px solid rgba(31, 95, 191, .45); outline-offset: 2px; }
+.field.is-invalid .plan-body { border-color: var(--bad); }
+
+/* ---------- Terms ---------- */
+.terms { display: flex; gap: 12px; align-items: flex-start; font-weight: 400; margin: 0; cursor: pointer; }
+.terms input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); flex: none; }
+
+/* ---------- Buttons + status ---------- */
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.btn {
+  min-height: 50px; padding: 0 28px;
+  font: 600 16px/1 var(--body);
+  border-radius: 4px; cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background .15s, border-color .15s;
+}
+.btn.primary { background: var(--blue); color: #fff; }
+.btn.primary:hover { background: #184FA0; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--ink); }
+.btn:focus-visible { outline: 3px solid rgba(31, 95, 191, .45); outline-offset: 2px; }
+
+.status { margin: 18px 0 0; font-size: 14.5px; font-weight: 600; color: var(--bad); }
+.status:empty { display: none; }
+
+@keyframes shake {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.shake { animation: shake .35s; }
+
+/* ---------- Success state ---------- */
+.success h2 { font: 800 clamp(40px, 7vw, 56px)/0.95 var(--display); margin: 0 0 8px; }
+.success .lead { color: var(--muted); margin: 0 0 28px; }
+.member-id { display: inline-flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+.member-id .plate { width: 76px; }
+.member-id b { font: 800 34px/1 var(--display); display: block; }
+.member-id small { color: var(--muted); }
+.success dl { margin: 0 0 28px; max-width: 460px; }
+.success dl div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.success dt { color: var(--muted); }
+.success dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+
+[hidden] { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+
+<body>
+<main class="page">
+
+  <!-- ================= Left column: intro + live slip ================= -->
+  <aside class="side">
+    <p class="brand">Ironside Fitness</p>
+    <h1>Gym admission form</h1>
+    <p class="intro">Every field checks itself as you type, so you know what to fix before you submit.</p>
+
+    <section class="slip" aria-label="Live membership summary">
+      <h2>Membership slip</h2>
+      <div class="slip-row"><span class="k">Member</span><span class="dots"></span><span class="v" id="sumName">&mdash;</span></div>
+      <div class="slip-row"><span class="k">Plan</span><span class="dots"></span><span class="v" id="sumPlan">&mdash;</span></div>
+      <div class="slip-row"><span class="k">Starts</span><span class="dots"></span><span class="v" id="sumStart">&mdash;</span></div>
+      <div class="slip-row"><span class="k">Ends</span><span class="dots"></span><span class="v" id="sumEnd">&mdash;</span></div>
+      <div class="slip-total"><span class="k">Total</span><span class="v" id="sumTotal">&mdash;</span></div>
+
+      <div class="progress">
+        <p id="progressText" aria-live="polite">0 of 13 required fields complete</p>
+        <div class="bar" id="progressBar" role="progressbar" aria-label="Form completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progressFill"></i></div>
+      </div>
+    </section>
+  </aside>
+
+  <!-- ================= Right column: the form ================= -->
+  <div>
+    <form id="admissionForm" class="sheet" novalidate>
+
+      <!-- ---------- Personal details ---------- -->
+      <section class="section">
+        <h2>Personal details</h2>
+
+        <div class="row two">
+          <div class="field" data-field="fullName">
+            <label for="fullName">Full name</label>
+            <input type="text" id="fullName" name="fullName" autocomplete="name" placeholder="Rohan Deshmukh" aria-describedby="fullName-msg">
+            <p class="msg" id="fullName-msg" aria-live="polite"></p>
+          </div>
+
+          <div class="field" data-field="email">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="rohan@example.com" aria-describedby="email-msg">
+            <p class="msg" id="email-msg" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div class="field" data-field="phone">
+            <label for="phone">Mobile number</label>
+            <input type="tel" id="phone" name="phone" inputmode="numeric" maxlength="10" data-digits autocomplete="tel-national" placeholder="9876543210" aria-describedby="phone-msg">
+            <p class="msg" id="phone-msg" aria-live="polite"></p>
+          </div>
+
+          <div class="field" data-field="dob">
+            <label for="dob">Date of birth</label>
+            <input type="date" id="dob" name="dob" autocomplete="bday" aria-describedby="dob-msg">
+            <p class="msg" id="dob-msg" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <fieldset class="field" data-field="gender" aria-describedby="gender-msg">
+            <legend class="label">Gender</legend>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="gender" value="Male"><span>Male</span></label>
+              <label class="chip"><input type="radio" name="gender" value="Female"><span>Female</span></label>
+              <label class="chip"><input type="radio" name="gender" value="Other"><span>Other</span></label>
+            </div>
+            <p class="msg" id="gender-msg" aria-live="polite"></p>
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- ---------- Body and goals ---------- -->
+      <section class="section">
+        <h2>Body and goals</h2>
+
+        <div class="row two">
+          <div class="field" data-field="height">
+            <label for="height">Height (cm)</label>
+            <input type="number" id="height" name="height" inputmode="decimal" placeholder="172" aria-describedby="height-msg">
+            <p class="msg" id="height-msg" aria-live="polite"></p>
+          </div>
+
+          <div class="field" data-field="weight">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" name="weight" inputmode="decimal" placeholder="68" aria-describedby="weight-msg">
+            <p class="msg" id="weight-msg" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <fieldset class="field" data-field="goals" aria-describedby="goals-msg">
+            <legend class="label">What are you training for? <span class="opt">Pick at least one</span></legend>
+            <div class="chips">
+              <label class="chip"><input type="checkbox" name="goals" value="Weight loss"><span>Weight loss</span></label>
+              <label class="chip"><input type="checkbox" name="goals" value="Muscle gain"><span>Muscle gain</span></label>
+              <label class="chip"><input type="checkbox" name="goals" value="Strength"><span>Strength</span></label>
+              <label class="chip"><input type="checkbox" name="goals" value="Stamina"><span>Stamina</span></label>
+              <label class="chip"><input type="checkbox" name="goals" value="General fitness"><span>General fitness</span></label>
+            </div>
+            <p class="msg" id="goals-msg" aria-live="polite"></p>
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- ---------- Membership ---------- -->
+      <section class="section">
+        <h2>Membership</h2>
+
+        <div class="row">
+          <fieldset class="field" data-field="plan" aria-describedby="plan-msg">
+            <legend class="label">Plan</legend>
+            <div class="plans">
+              <label class="plan">
+                <input type="radio" name="plan" value="Monthly" data-months="1" data-price="1500">
+                <span class="plan-body"><span class="plate green">1</span><span class="plan-name">Monthly</span><span class="plan-price">&#8377;1,500</span></span>
+              </label>
+              <label class="plan">
+                <input type="radio" name="plan" value="Quarterly" data-months="3" data-price="4000">
+                <span class="plan-body"><span class="plate yellow">3</span><span class="plan-name">Quarterly</span><span class="plan-price">&#8377;4,000</span></span>
+              </label>
+              <label class="plan">
+                <input type="radio" name="plan" value="Half-yearly" data-months="6" data-price="7500">
+                <span class="plan-body"><span class="plate blue">6</span><span class="plan-name">Half-yearly</span><span class="plan-price">&#8377;7,500</span></span>
+              </label>
+              <label class="plan">
+                <input type="radio" name="plan" value="Yearly" data-months="12" data-price="13000">
+                <span class="plan-body"><span class="plate red">12</span><span class="plan-name">Yearly</span><span class="plan-price">&#8377;13,000</span></span>
+              </label>
+            </div>
+            <p class="msg" id="plan-msg" aria-live="polite"></p>
+          </fieldset>
+        </div>
+
+        <div class="row two">
+          <div class="field" data-field="startDate">
+            <label for="startDate">Start date</label>
+            <input type="date" id="startDate" name="startDate" aria-describedby="startDate-msg">
+            <p class="msg" id="startDate-msg" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Emergency + health ---------- -->
+      <section class="section">
+        <h2>Emergency contact and health</h2>
+
+        <div class="row two">
+          <div class="field" data-field="emergencyName">
+            <label for="emergencyName">Contact name</label>
+            <input type="text" id="emergencyName" name="emergencyName" placeholder="Meera Deshmukh" aria-describedby="emergencyName-msg">
+            <p class="msg" id="emergencyName-msg" aria-live="polite"></p>
+          </div>
+
+          <div class="field" data-field="emergencyPhone">
+            <label for="emergencyPhone">Contact mobile number</label>
+            <input type="tel" id="emergencyPhone" name="emergencyPhone" inputmode="numeric" maxlength="10" data-digits placeholder="9123456780" aria-describedby="emergencyPhone-msg">
+            <p class="msg" id="emergencyPhone-msg" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" data-field="notes">
+            <div class="label-row">
+              <label for="notes">Injuries or medical conditions <span class="opt">Optional</span></label>
+              <span class="count" id="notesCount">0/200</span>
+            </div>
+            <textarea id="notes" name="notes" placeholder="Anything our trainers should know before your first session" aria-describedby="notes-msg"></textarea>
+            <p class="msg" id="notes-msg" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" data-field="terms">
+            <label class="terms" for="terms">
+              <input type="checkbox" id="terms" name="terms" aria-describedby="terms-msg">
+              <span>I confirm the details above are correct and I agree to the gym rules and fee policy.</span>
+            </label>
+            <p class="msg" id="terms-msg" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <p class="status" id="formStatus" role="alert"></p>
+
+      <div class="actions">
+        <button type="submit" class="btn primary">Complete admission</button>
+        <button type="reset" class="btn ghost">Clear form</button>
+      </div>
+    </form>
+
+    <!-- Shown after a successful submit -->
+    <section class="sheet success" id="success" hidden aria-live="polite">
+      <h2 id="successTitle">You're in.</h2>
+      <p class="lead">Your admission is recorded. Show your member ID at the front desk on your start date.</p>
+
+      <div class="member-id">
+        <span class="plate green" id="successPlate">1</span>
+        <span><small>Member ID</small><b id="successId">IRN-00000</b></span>
+      </div>
+
+      <dl>
+        <div><dt>Name</dt><dd id="rName"></dd></div>
+        <div><dt>Plan</dt><dd id="rPlan"></dd></div>
+        <div><dt>Membership runs</dt><dd id="rDates"></dd></div>
+        <div><dt>Amount due</dt><dd id="rTotal"></dd></div>
+        <div><dt>Goals</dt><dd id="rGoals"></dd></div>
+      </dl>
+
+      <button type="button" class="btn primary" id="another">Add another member</button>
+    </section>
+  </div>
+</main>
+
+
+<script>
+/* ==========================================================
+   GYM ADMISSION FORM: live validation with DOM events
+
+   How it works
+   1. `rules`     : one small function per field. It receives the
+                    field's current value and returns an error
+                    message, or '' when the value is valid.
+   2. `getValue`  : reads a field's value (text, radio, checkbox...).
+   3. `paint`     : shows the result (colours + message) in the page.
+   4. Events      : four listeners on the <form> (event delegation)
+                    call the code above at the right moment.
+   ========================================================== */
+(() => {
+  'use strict';
+
+  /* ---------- Accessing elements ---------- */
+  const form = document.getElementById('admissionForm');   // by id
+  const $ = (id) => document.getElementById(id);           // short helper
+  const touched = new Set();      // fields the user has already visited
+  const optional = new Set(['notes']);
+
+  /* ---------- Small helpers ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parseDate = (v) => new Date(v + 'T00:00:00');
+  const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const addMonths = (d, m) => {
+    const x = new Date(d), day = x.getDate();
+    x.setMonth(x.getMonth() + m);
+    if (x.getDate() !== day) x.setDate(0);       // e.g. 31 Jan + 1 month -> 28/29 Feb
+    return x;
+  };
+  const ageOn = (dob) => {
+    const t = new Date();
+    let age = t.getFullYear() - dob.getFullYear();
+    const m = t.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && t.getDate() < dob.getDate())) age--;
+    return age;
+  };
+  const money = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  const fmtDate = (d) => new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+  const isEmpty = (v) => Array.isArray(v) ? v.length === 0 : (v === '' || v === false);
+
+  /* ---------- Reading a field's value ---------- */
+  function getValue(name) {
+    const els = form.querySelectorAll(`[name="${name}"]`);
+    const first = els[0];
+
+    if (first.type === 'radio') {                              // radio group -> chosen value
+      const picked = form.querySelector(`[name="${name}"]:checked`);
+      return picked ? picked.value : '';
+    }
+    if (first.type === 'checkbox') {
+      const ticked = [...els].filter((el) => el.checked).map((el) => el.value);
+      return els.length > 1 ? ticked : first.checked;          // group -> array, single -> true/false
+    }
+    return first.value.trim();                                 // text, email, number, date, textarea
+  }
+
+  /* ==========================================================
+     VALIDATION RULES
+     Return '' when valid, otherwise the message to show.
+     ========================================================== */
+  const nameRule = (v, who) =>
+    !v ? `Enter ${who} name.`
+    : v.length < 3 ? 'Name must be at least 3 characters.'
+    : !/^[A-Za-z][A-Za-z .'-]*$/.test(v) ? 'Use letters and spaces only.'
+    : '';
+
+  const phoneRule = (v) =>
+    !v ? 'Enter a 10-digit mobile number.'
+    : v.length < 10 ? `${10 - v.length} more digit${10 - v.length > 1 ? 's' : ''} needed.`
+    : !/^[6-9]/.test(v) ? 'Mobile numbers start with 6, 7, 8 or 9.'
+    : '';
+
+  // Order matters: Object.keys(rules) is also the order used to find the first error on submit.
+  const rules = {
+    fullName: (v) => nameRule(v, 'your full'),
+
+    email: (v) =>
+      !v ? 'Enter your email address.'
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? 'Enter an email like name@example.com.'
+      : '',
+
+    phone: phoneRule,
+
+    dob: (v) => {
+      if (!v) return 'Choose your date of birth.';
+      const d = parseDate(v);
+      if (isNaN(d)) return 'Enter a valid date.';
+      if (d > new Date()) return 'Date of birth cannot be in the future.';
+      const age = ageOn(d);
+      if (age < 16) return 'You must be at least 16 to join.';
+      if (age > 80) return 'Check the year. Maximum age is 80.';
+      return '';
+    },
+
+    gender: (v) => (v ? '' : 'Select one option.'),
+
+    height: (v) => {
+      if (!v) return 'Enter your height in cm.';
+      const n = Number(v);
+      return n < 100 || n > 250 ? 'Height must be between 100 and 250 cm.' : '';
+    },
+
+    weight: (v) => {
+      if (!v) return 'Enter your weight in kg.';
+      const n = Number(v);
+      return n < 30 || n > 250 ? 'Weight must be between 30 and 250 kg.' : '';
+    },
+
+    goals: (v) => (v.length ? '' : 'Pick at least one goal.'),
+
+    plan: (v) => (v ? '' : 'Choose a membership plan.'),
+
+    startDate: (v) => {
+      if (!v) return 'Choose a start date.';
+      const d = parseDate(v);
+      if (isNaN(d)) return 'Enter a valid date.';
+      if (d < startOfToday()) return 'Start date cannot be in the past.';
+      if (d > addDays(startOfToday(), 30)) return 'Choose a date within the next 30 days.';
+      return '';
+    },
+
+    emergencyName: (v) => nameRule(v, 'a contact'),
+
+    emergencyPhone: (v) => {
+      const base = phoneRule(v);
+      if (base) return base;
+      return v === getValue('phone') ? 'Use a different number from your own.' : '';   // cross-field check
+    },
+
+    notes: (v) => (v.length > 200 ? `${v.length - 200} characters over the 200 limit.` : ''),
+
+    terms: (v) => (v ? '' : 'Accept the terms to continue.')
+  };
+
+  /* ==========================================================
+     SHOWING RESULTS
+     ========================================================== */
+  function clearField(name) {
+    const wrap = form.querySelector(`[data-field="${name}"]`);
+    wrap.classList.remove('is-valid', 'is-invalid');
+    wrap.querySelector('.msg').textContent = '';
+    wrap.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+  }
+
+  function paint(name, value, error) {
+    if (!error && optional.has(name) && isEmpty(value)) { clearField(name); return; }
+
+    const wrap = form.querySelector(`[data-field="${name}"]`);
+    wrap.classList.toggle('is-invalid', Boolean(error));
+    wrap.classList.toggle('is-valid', !error);
+    wrap.querySelector('.msg').textContent = error || 'Looks good';
+    wrap.querySelectorAll('input, textarea').forEach((el) => {
+      if (error) el.setAttribute('aria-invalid', 'true');
+      else el.removeAttribute('aria-invalid');
+    });
+  }
+
+  // Live check: errors show while typing, but an untouched empty field stays quiet.
+  function check(name) {
+    const value = getValue(name);
+    if (isEmpty(value) && !touched.has(name)) { clearField(name); return; }
+    paint(name, value, rules[name](value));
+  }
+
+  function updateCounter() {
+    const len = $('notes').value.length;
+    $('notesCount').textContent = `${len}/200`;
+    $('notesCount').classList.toggle('over', len > 200);
+  }
+
+  /* ---------- Live summary + progress ---------- */
+  function selectedPlan() {
+    const el = form.querySelector('[name="plan"]:checked');
+    return el ? { name: el.value, months: +el.dataset.months, price: +el.dataset.price } : null;
+  }
+
+  function endDate(plan, startValue) {
+    return addDays(addMonths(parseDate(startValue), plan.months), -1);
+  }
+
+  function updateSummary() {
+    const name = getValue('fullName');
+    const plan = selectedPlan();
+    const start = getValue('startDate');
+    const startOk = start && !rules.startDate(start);
+
+    $('sumName').textContent = name && !rules.fullName(name) ? name : '\u2014';
+    $('sumPlan').textContent = plan ? plan.name : '\u2014';
+    $('sumStart').textContent = startOk ? fmtDate(parseDate(start)) : '\u2014';
+    $('sumEnd').textContent = plan && startOk ? fmtDate(endDate(plan, start)) : '\u2014';
+    $('sumTotal').textContent = plan ? money(plan.price) : '\u2014';
+  }
+
+  const requiredNames = () => Object.keys(rules).filter((n) => !optional.has(n));
+
+  function updateProgress() {
+    const names = requiredNames();
+    const done = names.filter((n) => !rules[n](getValue(n))).length;
+    const pct = Math.round((done / names.length) * 100);
+
+    $('progressFill').style.width = pct + '%';
+    $('progressBar').setAttribute('aria-valuenow', pct);
+    $('progressBar').classList.toggle('done', done === names.length);
+    $('progressText').textContent = `${done} of ${names.length} required fields complete`;
+  }
+
+  const refresh = () => { updateSummary(); updateProgress(); };
+
+  /* ==========================================================
+     EVENTS (event delegation: one listener on the <form> serves
+     every field; `event.target` tells us which one fired)
+     ========================================================== */
+  const isChoice = (el) => el.matches('select, [type="radio"], [type="checkbox"]');
+
+  // 1) input: fires on every keystroke in text-like fields -> live check
+  form.addEventListener('input', (e) => {
+    const el = e.target;
+    if (!rules[el.name] || isChoice(el)) return;
+
+    if (el.hasAttribute('data-digits')) el.value = el.value.replace(/\D/g, '');   // block letters in phone fields
+    if (el.id === 'notes') updateCounter();
+
+    check(el.name);
+    if (el.name === 'phone' && touched.has('emergencyPhone')) check('emergencyPhone');   // dependent field
+    refresh();
+  });
+
+  // 2) focusout: fires when the user leaves a field (like blur, but it bubbles) -> mark as touched
+  form.addEventListener('focusout', (e) => {
+    const el = e.target;
+    if (!rules[el.name] || isChoice(el)) return;
+
+    touched.add(el.name);
+    check(el.name);
+    refresh();
+  });
+
+  // 3) change: fires when a radio, checkbox or select is picked
+  form.addEventListener('change', (e) => {
+    const el = e.target;
+    if (!rules[el.name] || !isChoice(el)) return;
+
+    touched.add(el.name);
+    check(el.name);
+    refresh();
+  });
+
+  // 4) submit: validate everything, focus the first problem, or finish
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();                       // stop the page reloading
+
+    const invalid = [];
+    Object.keys(rules).forEach((name) => {
+      touched.add(name);
+      const value = getValue(name);
+      const error = rules[name](value);
+      paint(name, value, error);
+      if (error) invalid.push(name);
+    });
+    refresh();
+
+    const status = $('formStatus');
+    if (invalid.length) {
+      status.textContent = `${invalid.length} field${invalid.length > 1 ? 's need' : ' needs'} attention. Fix the highlighted fields and try again.`;
+      form.querySelector(`[name="${invalid[0]}"]`).focus();
+      form.classList.remove('shake');
+      void form.offsetWidth;                  // restart the animation
+      form.classList.add('shake');
+      return;
+    }
+
+    status.textContent = '';
+    showSuccess();
+  });
+
+  // 5) reset: clear all messages after the browser empties the inputs
+  form.addEventListener('reset', () => {
+    touched.clear();
+    setTimeout(() => {                        // wait until values are actually cleared
+      Object.keys(rules).forEach(clearField);
+      $('formStatus').textContent = '';
+      updateCounter();
+      refresh();
+    }, 0);
+  });
+
+  /* ==========================================================
+     SUCCESS SCREEN
+     ========================================================== */
+  function showSuccess() {
+    const plan = selectedPlan();
+    const start = getValue('startDate');
+    const name = getValue('fullName');
+
+    // Everything the form collected, ready to send to a server
+    const data = Object.fromEntries(new FormData(form));
+    data.goals = new FormData(form).getAll('goals');
+    console.log('Admission data:', data);
+
+    // textContent (not innerHTML) keeps typed text from being run as HTML
+    $('successTitle').textContent = `You're in, ${name.split(' ')[0]}.`;
+    $('successId').textContent = 'IRN-' + String(Math.floor(Math.random() * 90000) + 10000);
+    $('rName').textContent = name;
+    $('rPlan').textContent = plan.name;
+    $('rDates').textContent = `${fmtDate(parseDate(start))} to ${fmtDate(endDate(plan, start))}`;
+    $('rTotal').textContent = money(plan.price);
+    $('rGoals').textContent = getValue('goals').join(', ');
+
+    const plate = $('successPlate');
+    plate.textContent = plan.months;
+    plate.className = 'plate ' + ({ 1: 'green', 3: 'yellow', 6: 'blue', 12: 'red' })[plan.months];
+
+    form.hidden = true;
+    $('success').hidden = false;
+    $('success').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('another').addEventListener('click', () => {
+    form.reset();
+    $('success').hidden = true;
+    form.hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ==========================================================
+     START-UP: limit the date pickers, then draw the initial state
+     ========================================================== */
+  const today = startOfToday();
+  $('dob').max = toISO(new Date(today.getFullYear() - 16, today.getMonth(), today.getDate()));
+  $('dob').min = toISO(new Date(today.getFullYear() - 80, today.getMonth(), today.getDate()));
+  $('startDate').min = toISO(today);
+  $('startDate').max = toISO(addDays(today, 30));
+
+  updateCounter();
+  refresh();
+})();
+</script>
+</body>
+</html>
