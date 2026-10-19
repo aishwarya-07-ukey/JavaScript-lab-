@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiment 10: Load and Display JSON Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mist: #e9eef6;
+    --panel: #fbfcff;
+    --ink: #14233b;
+    --muted: #5b6b85;
+    --line: #dde4f0;
+    --cobalt: #2f5bea;
+    --cobalt-ink: #ffffff;
+    --hero: #1f3fae;
+    --row-hover: #f1f5ff;
+    --ok: #0f8a73;
+    --bad: #c0332b;
+    --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --mist: #0e1524; --panel: #162036; --ink: #e6ecf8; --muted: #93a3c0;
+      --line: #263250; --cobalt: #7aa2ff; --cobalt-ink: #0e1524;
+      --hero: #0b2a78; --row-hover: #1c2945; --ok: #4fd1b5; --bad: #ff8a80;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--mist); color: var(--ink);
+    font-family: var(--body); line-height: 1.5;
+  }
+
+  /* ---------- Hero band ---------- */
+  .hero {
+    background: var(--hero); color: #fff;
+    padding: 2.5rem 1.25rem 6.5rem;
+    border-bottom-left-radius: 72px;
+  }
+  .hero-inner { max-width: 980px; margin: 0 auto; }
+  .hero h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05;
+    letter-spacing: -0.02em; margin: 0 0 .6rem; max-width: 14ch;
+  }
+  .hero p { margin: 0; max-width: 52ch; color: #d3defa; }
+
+  /* ---------- Main panel overlapping the hero ---------- */
+  main { max-width: 980px; margin: -4.2rem auto 3rem; padding: 0 1.25rem; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 20px; padding: 1.25rem;
+    box-shadow: 0 18px 40px -22px rgba(20, 35, 59, .45);
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+  .toolbar + .toolbar { margin-top: .75rem; }
+  .spacer { flex: 1; }
+
+  /* Segmented control for the loading method */
+  .segmented {
+    display: inline-flex; padding: 4px; gap: 4px;
+    background: var(--mist); border-radius: 12px;
+  }
+  .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .segmented label {
+    padding: .45rem .95rem; border-radius: 9px; cursor: pointer;
+    font-weight: 500; font-size: .93rem; color: var(--muted);
+    transition: background .15s, color .15s;
+  }
+  .segmented input:checked + label {
+    background: var(--panel); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(20, 35, 59, .18);
+  }
+  .segmented input:focus-visible + label { outline: 2px solid var(--cobalt); outline-offset: 2px; }
+
+  button, select, input[type="text"] { font: inherit; color: var(--ink); }
+  button {
+    padding: .55rem 1.1rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel); font-weight: 500;
+  }
+  button:hover:not(:disabled) { background: var(--row-hover); }
+  button.primary { background: var(--cobalt); color: var(--cobalt-ink); border-color: var(--cobalt); font-weight: 600; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--cobalt); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--cobalt); outline-offset: 2px; }
+
+  .field {
+    padding: .5rem .8rem; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--panel);
+  }
+  #search { flex: 1; min-width: 190px; }
+
+  /* ---------- Status message ---------- */
+  #status {
+    margin: 1rem 0 .75rem; padding: .6rem .9rem; border-radius: 10px;
+    background: var(--mist); color: var(--muted); font-size: .93rem; min-height: 2.6rem;
+  }
+  #status.ok { color: var(--ok); }
+  #status.error { color: var(--bad); }
+
+  /* ---------- Table ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; }
+  thead th {
+    text-align: left; padding: .8rem 1rem; font-weight: 600; font-size: .9rem;
+    color: var(--muted); background: var(--mist); cursor: pointer; white-space: nowrap;
+    user-select: none;
+  }
+  thead th:hover { color: var(--ink); }
+  thead th.asc::after  { content: " \2191"; color: var(--cobalt); }
+  thead th.desc::after { content: " \2193"; color: var(--cobalt); }
+  tbody td { padding: .75rem 1rem; border-top: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:hover td { background: var(--row-hover); }
+  td.id { color: var(--muted); width: 3.5rem; font-variant-numeric: tabular-nums; }
+  td.empty { text-align: center; color: var(--muted); padding: 2.2rem 1rem; }
+
+  .person { display: flex; align-items: center; gap: .75rem; font-weight: 500; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-size: .8rem; font-weight: 600;
+    color: #fff;
+  }
+  .email { color: var(--muted); }
+  .pill {
+    display: inline-block; padding: .15rem .65rem; border-radius: 999px;
+    background: var(--mist); font-size: .85rem; white-space: nowrap;
+  }
+
+  /* ---------- Loading skeleton ---------- */
+  .skeleton td > span {
+    display: block; height: 14px; border-radius: 7px;
+    background: linear-gradient(90deg, var(--mist) 25%, var(--line) 50%, var(--mist) 75%);
+    background-size: 200% 100%; animation: shimmer 1.2s linear infinite;
+  }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton td > span { animation: none; } }
+
+  /* ---------- Pager ---------- */
+  .pager { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1rem; font-size: .93rem; color: var(--muted); }
+  .pager .info { color: var(--ink); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>Load JSON, show it live</h1>
+    <p>Pull user records with fetch() or jQuery $.getJSON(), then search, sort and page through them in a table built on the fly.</p>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+
+    <div class="toolbar">
+      <div class="segmented" role="radiogroup" aria-label="Loading method">
+        <input type="radio" name="method" id="m-fetch" value="fetch" checked>
+        <label for="m-fetch">fetch()</label>
+        <input type="radio" name="method" id="m-jq" value="jquery">
+        <label for="m-jq">$.getJSON()</label>
+      </div>
+      <button id="btnLoad" class="primary">Load data</button>
+      <button id="btnClear">Clear</button>
+      <span class="spacer"></span>
+      <button id="btnCsv" disabled>Export CSV</button>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="search" class="field" placeholder="Search name, email or city" aria-label="Search">
+      <select id="cityFilter" class="field" aria-label="Filter by city"><option value="">All cities</option></select>
+      <select id="pageSize" class="field" aria-label="Rows per page">
+        <option value="3">3 per page</option>
+        <option value="5" selected>5 per page</option>
+        <option value="10">10 per page</option>
+      </select>
+    </div>
+
+    <div id="status" role="status" aria-live="polite">Choose a method and load the data.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-key="id">ID</th>
+            <th data-key="name">Name</th>
+            <th data-key="email">Email</th>
+            <th data-key="city">City</th>
+            <th data-key="company">Company</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button id="prev">Previous</button>
+      <span class="info" id="pageInfo"></span>
+      <button id="next">Next</button>
+      <span class="spacer"></span>
+      <span id="count"></span>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(function () {
+  'use strict';
+
+  /* ---------- Configuration ---------- */
+  const SOURCE = 'https://jsonplaceholder.typicode.com/users';  // never printed on the page
+  const TIMEOUT_MS = 8000;
+  const MAX_RETRIES = 2;
+
+  /* ---------- Application state ---------- */
+  const state = {
+    all: [], loading: false,
+    sortKey: null, sortDir: 1,
+    page: 1, pageSize: 5,
+    search: '', city: ''
+  };
+
+  /* ---------- Helpers ---------- */
+  const setStatus = (msg, type = '') => $('#status').text(msg).attr('class', type);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const normalize = list => list.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    city: u.address && u.address.city ? u.address.city : '',
+    company: u.company && u.company.name ? u.company.name : ''
+  }));
+
+  function debounce(fn, delay) {
+    let t;
+    return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), delay); };
+  }
+
+  // Initials and a stable colour for each person's avatar
+  const initials = name => name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  function avatarColor(name) {
+    let h = 0;
+    for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return `hsl(${h}, 48%, 42%)`;
+  }
+
+  /* ---------- Method 1: fetch() with async/await, timeout and abort ---------- */
+  async function loadWithFetch() {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const response = await fetch(SOURCE, { signal: controller.signal });
+      if (!response.ok) throw new Error('HTTP status ' + response.status);
+      const data = await response.json();
+      if (!Array.isArray(data)) throw new Error('Unexpected data format');
+      return data;
+    } catch (err) {
+      if (err.name === 'AbortError') throw new Error('Request timed out');
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /* ---------- Method 2: jQuery $.getJSON() wrapped as a Promise ---------- */
+  function loadWithJQuery() {
+    return new Promise((resolve, reject) => {
+      $.ajaxSetup({ timeout: TIMEOUT_MS });
+      $.getJSON(SOURCE)
+        .done(data => Array.isArray(data) ? resolve(data) : reject(new Error('Unexpected data format')))
+        .fail((xhr, textStatus, errorThrown) =>
+          reject(new Error(textStatus === 'timeout' ? 'Request timed out' : (errorThrown || 'Network error'))));
+    });
+  }
+
+  /* ---------- Retry wrapper ---------- */
+  async function withRetry(task) {
+    let lastError;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try { return await task(); }
+      catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES) {
+          setStatus(`Attempt ${attempt + 1} failed (${err.message}). Retrying...`, 'error');
+          await sleep(800 * (attempt + 1));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  /* ---------- Load button handler ---------- */
+  async function loadData() {
+    const method = $('input[name="method"]:checked').val();
+    const label = method === 'fetch' ? 'fetch()' : '$.getJSON()';
+    state.loading = true;
+    $('#btnLoad').prop('disabled', true);
+    setStatus('Loading data using ' + label + '...');
+    render();                                          // shows skeleton rows
+    const started = performance.now();
+    try {
+      const raw = await withRetry(method === 'fetch' ? loadWithFetch : loadWithJQuery);
+      state.all = normalize(raw);
+      state.page = 1;
+      fillCityFilter();
+      state.loading = false;
+      render();
+      const ms = Math.round(performance.now() - started);
+      setStatus(`Loaded ${state.all.length} records using ${label} in ${ms} ms.`, 'ok');
+    } catch (err) {
+      state.loading = false;
+      render();
+      setStatus('Failed to load data: ' + err.message, 'error');
+    } finally {
+      $('#btnLoad').prop('disabled', false);
+    }
+  }
+
+  function fillCityFilter() {
+    const cities = [...new Set(state.all.map(r => r.city))].sort();
+    const $sel = $('#cityFilter').empty().append($('<option>').val('').text('All cities'));
+    cities.forEach(c => $sel.append($('<option>').val(c).text(c)));
+    state.city = '';
+  }
+
+  /* ---------- Pipeline: filter -> sort ---------- */
+  function getFiltered() {
+    const term = state.search.toLowerCase();
+    let rows = state.all.filter(r =>
+      (!state.city || r.city === state.city) &&
+      (!term || [r.name, r.email, r.city].some(v => String(v).toLowerCase().includes(term)))
+    );
+    if (state.sortKey) {
+      const k = state.sortKey, d = state.sortDir;
+      rows = rows.slice().sort((a, b) =>
+        (typeof a[k] === 'number' ? a[k] - b[k] : String(a[k]).localeCompare(String(b[k]))) * d);
+    }
+    return rows;
+  }
+
+  /* ---------- Render ---------- */
+  function renderSkeleton($body) {
+    for (let i = 0; i < state.pageSize; i++) {
+      const $tr = $('<tr>').addClass('skeleton');
+      for (let c = 0; c < 5; c++) $tr.append($('<td>').append('<span></span>'));
+      $body.append($tr);
+    }
+  }
+
+  function renderRow(r) {
+    const $name = $('<div>').addClass('person')
+      .append($('<span>').addClass('avatar').css('background', avatarColor(r.name)).text(initials(r.name)))
+      .append($('<span>').text(r.name));
+    return $('<tr>')
+      .append($('<td>').addClass('id').text(r.id))
+      .append($('<td>').append($name))
+      .append($('<td>').addClass('email').text(r.email))      // plain text, not a link
+      .append($('<td>').text(r.city))
+      .append($('<td>').append($('<span>').addClass('pill').text(r.company)));
+  }
+
+  function render() {
+    const $body = $('#tbody').empty();
+
+    if (state.loading) {
+      renderSkeleton($body);
+      $('#pageInfo').text('');
+      $('#count').text('');
+      $('#prev, #next, #btnCsv').prop('disabled', true);
+      return;
+    }
+
+    const rows = getFiltered();
+    const totalPages = Math.max(1, Math.ceil(rows.length / state.pageSize));
+    state.page = Math.min(state.page, totalPages);
+    const start = (state.page - 1) * state.pageSize;
+    const pageRows = rows.slice(start, start + state.pageSize);
+
+    if (!pageRows.length) {
+      $body.append($('<tr>').append(
+        $('<td>').attr('colspan', 5).addClass('empty')
+          .text(state.all.length ? 'No records match your search.' : 'No data yet. Press Load data to begin.')));
+    } else {
+      pageRows.forEach(r => $body.append(renderRow(r)));
+    }
+
+    $('#pageInfo').text(`Page ${state.page} of ${totalPages}`);
+    $('#count').text(`${rows.length} record(s)`);
+    $('#prev').prop('disabled', state.page <= 1);
+    $('#next').prop('disabled', state.page >= totalPages);
+    $('#btnCsv').prop('disabled', !rows.length);
+
+    $('th').removeClass('asc desc');
+    if (state.sortKey) $(`th[data-key="${state.sortKey}"]`).addClass(state.sortDir === 1 ? 'asc' : 'desc');
+  }
+
+  /* ---------- CSV export of the filtered rows ---------- */
+  function exportCsv() {
+    const cols = ['id', 'name', 'email', 'city', 'company'];
+    const esc = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const lines = [cols.join(',')].concat(getFiltered().map(r => cols.map(c => esc(r[c])).join(',')));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ---------- Events ---------- */
+  $('#btnLoad').on('click', loadData);
+  $('#btnClear').on('click', () => {
+    Object.assign(state, { all: [], page: 1, search: '', city: '', sortKey: null, sortDir: 1 });
+    $('#search').val('');
+    fillCityFilter();
+    render();
+    setStatus('Table cleared.');
+  });
+  $('#btnCsv').on('click', exportCsv);
+
+  $('#search').on('input', debounce(function () { state.search = this.value.trim(); state.page = 1; render(); }, 300));
+  $('#cityFilter').on('change', function () { state.city = this.value; state.page = 1; render(); });
+  $('#pageSize').on('change', function () { state.pageSize = Number(this.value); state.page = 1; render(); });
+
+  $('th[data-key]').on('click', function () {
+    const key = $(this).data('key');
+    state.sortDir = state.sortKey === key ? -state.sortDir : 1;
+    state.sortKey = key;
+    render();
+  });
+
+  $('#prev').on('click', () => { state.page--; render(); });
+  $('#next').on('click', () => { state.page++; render(); });
+
+  render();
+});
+</script>
+</body>
+</html>
