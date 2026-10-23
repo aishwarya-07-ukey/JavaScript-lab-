@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily To-Do Activity Planner</title>
+
+    <style>
+        body
+        {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f3ff;
+        }
+
+        .header
+        {
+            background: #6c5ce7;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .header h1
+        {
+            margin: 0;
+        }
+
+        .clock
+        {
+            font-size: 22px;
+            margin-top: 10px;
+        }
+
+        .container
+        {
+            width: 90%;
+            margin: 30px auto;
+            display: flex;
+            gap: 25px;
+        }
+
+        .form-box
+        {
+            width: 30%;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .list-box
+        {
+            width: 70%;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h2
+        {
+            color: #6c5ce7;
+        }
+
+        label
+        {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input
+        {
+            width: 100%;
+            padding: 10px;
+            margin-top: 7px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+        }
+
+        button
+        {
+            border: none;
+            padding: 9px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .add-btn
+        {
+            width: 100%;
+            background: #6c5ce7;
+            color: white;
+            font-size: 16px;
+        }
+
+        .add-btn:hover
+        {
+            background: #5747d1;
+        }
+
+        .activity
+        {
+            border: 1px solid #ddd;
+            border-left: 6px solid #6c5ce7;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background: #faf9ff;
+        }
+
+        .activity h3
+        {
+            margin: 0 0 8px 0;
+        }
+
+        .time
+        {
+            color: #6c5ce7;
+            font-weight: bold;
+        }
+
+        .edit-btn
+        {
+            background: #0984e3;
+            color: white;
+        }
+
+        .delete-btn
+        {
+            background: #d63031;
+            color: white;
+        }
+
+        .complete-btn
+        {
+            background: #00b894;
+            color: white;
+        }
+
+        .reminder
+        {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            color: #856404;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .completed
+        {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .empty
+        {
+            text-align: center;
+            color: gray;
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>📅 My Daily Activity Planner</h1>
+        <div class="clock" id="clock"></div>
+    </div>
+
+
+    <div class="container">
+
+        <!-- ADD ACTIVITY -->
+        <div class="form-box">
+
+            <h2>➕ Add Activity</h2>
+
+            <label>Activity Name</label>
+            <input type="text" id="activityName"
+                   placeholder="Example: JavaScript Lecture">
+
+            <label>Start Time</label>
+            <input type="time" id="startTime">
+
+            <label>End Time</label>
+            <input type="time" id="endTime">
+
+            <button class="add-btn" onclick="addActivity()">
+                Add Activity
+            </button>
+
+            <div class="reminder" id="reminder">
+                🔔 Planner is ready
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVITY LIST -->
+        <div class="list-box">
+
+            <h2>📝 Today's Activities</h2>
+
+            <div id="activityList">
+
+                <div class="activity">
+                    <h3>Wake Up & Get Ready</h3>
+
+                    <div class="time">
+                        ⏰ 07:00 AM - 08:00 AM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+
+                <div class="activity">
+                    <h3>Go to College</h3>
+
+                    <div class="time">
+                        ⏰ 08:00 AM - 09:00 AM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+
+                <div class="activity">
+                    <h3>JavaScript Lecture</h3>
+
+                    <div class="time">
+                        ⏰ 09:00 AM - 10:00 AM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+
+                <div class="activity">
+                    <h3>Lab Session</h3>
+
+                    <div class="time">
+                        ⏰ 10:00 AM - 11:00 AM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+
+                <div class="activity">
+                    <h3>Break</h3>
+
+                    <div class="time">
+                        ⏰ 11:00 AM - 12:00 PM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+
+                <div class="activity">
+                    <h3>Study Time</h3>
+
+                    <div class="time">
+                        ⏰ 12:00 PM - 01:00 PM
+                    </div>
+
+                    <button class="complete-btn"
+                            onclick="completeActivity(this)">
+                        Complete
+                    </button>
+
+                    <button class="edit-btn"
+                            onclick="editActivity(this)">
+                        Edit
+                    </button>
+
+                    <button class="delete-btn"
+                            onclick="deleteActivity(this)">
+                        Delete
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+var alarmShown = "";
+
+
+/* LIVE CLOCK */
+
+function updateClock()
+{
+    var currentTime = new Date();
+
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+
+    var ampm = "AM";
+
+    if(hours >= 12)
+    {
+        ampm = "PM";
+    }
+
+    if(hours > 12)
+    {
+        hours = hours - 12;
+    }
+
+    if(hours == 0)
+    {
+        hours = 12;
+    }
+
+    if(hours < 10)
+    {
+        hours = "0" + hours;
+    }
+
+    if(minutes < 10)
+    {
+        minutes = "0" + minutes;
+    }
+
+    if(seconds < 10)
+    {
+        seconds = "0" + seconds;
+    }
+
+    document.getElementById("clock").innerHTML =
+    "Current Time: " + hours + ":" + minutes + ":" +
+    seconds + " " + ampm;
+}
+
+setInterval(updateClock, 1000);
+
+updateClock();
+
+
+/* ADD ACTIVITY */
+
+function addActivity()
+{
+    var name =
+    document.getElementById("activityName").value;
+
+    var start =
+    document.getElementById("startTime").value;
+
+    var end =
+    document.getElementById("endTime").value;
+
+
+    if(name == "" || start == "" || end == "")
+    {
+        alert("Please enter all activity details.");
+        return;
+    }
+
+
+    var activityList =
+    document.getElementById("activityList");
+
+
+    activityList.innerHTML +=
+
+    '<div class="activity" data-start="' + start + '">' +
+
+        '<h3>' + name + '</h3>' +
+
+        '<div class="time">' +
+        '⏰ ' + convertTime(start) +
+        ' - ' + convertTime(end) +
+        '</div>' +
+
+        '<button class="complete-btn" ' +
+        'onclick="completeActivity(this)">' +
+        'Complete</button>' +
+
+        '<button class="edit-btn" ' +
+        'onclick="editActivity(this)">' +
+        'Edit</button>' +
+
+        '<button class="delete-btn" ' +
+        'onclick="deleteActivity(this)">' +
+        'Delete</button>' +
+
+    '</div>';
+
+
+    document.getElementById("activityName").value = "";
+    document.getElementById("startTime").value = "";
+    document.getElementById("endTime").value = "";
+
+    document.getElementById("reminder").innerHTML =
+    "✅ Activity added successfully!";
+}
+
+
+/* CONVERT TIME */
+
+function convertTime(time)
+{
+    var parts = time.split(":");
+
+    var hours = parseInt(parts[0]);
+    var minutes = parts[1];
+
+    var ampm = "AM";
+
+    if(hours >= 12)
+    {
+        ampm = "PM";
+    }
+
+    if(hours > 12)
+    {
+        hours = hours - 12;
+    }
+
+    if(hours == 0)
+    {
+        hours = 12;
+    }
+
+    return hours + ":" + minutes + " " + ampm;
+}
+
+
+/* DELETE */
+
+function deleteActivity(button)
+{
+    var activity = button.parentElement;
+
+    activity.remove();
+
+    document.getElementById("reminder").innerHTML =
+    "🗑️ Activity deleted.";
+}
+
+
+/* COMPLETE */
+
+function completeActivity(button)
+{
+    var activity = button.parentElement;
+
+    var heading = activity.firstElementChild;
+
+    heading.classList.toggle("completed");
+
+    if(button.innerHTML == "Complete")
+    {
+        button.innerHTML = "Completed ✓";
+    }
+    else
+    {
+        button.innerHTML = "Complete";
+    }
+}
+
+
+/* EDIT */
+
+function editActivity(button)
+{
+    var activity = button.parentElement;
+
+    var heading = activity.firstElementChild;
+
+    var newName =
+    prompt("Enter new activity name:",
+    heading.innerHTML);
+
+    if(newName != null && newName != "")
+    {
+        heading.innerHTML = newName;
+
+        document.getElementById("reminder").innerHTML =
+        "✏️ Activity updated successfully!";
+    }
+}
+
+
+/* ALARM FOR ALL ACTIVITIES */
+
+function checkAlarm()
+{
+    var currentTime = new Date();
+
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+
+    var currentTimeString =
+    hours + ":" + minutes;
+
+
+    var activities =
+    document.getElementById("activityList").children;
+
+
+    for(var i = 0; i < activities.length; i++)
+    {
+        var activity = activities[i];
+
+
+        /* Get activity start time */
+
+        var startTime =
+        activity.getAttribute("data-start");
+
+
+        if(startTime == null)
+        {
+            continue;
+        }
+
+
+        var timeParts =
+        startTime.split(":");
+
+
+        var activityHour =
+        parseInt(timeParts[0]);
+
+        var activityMinute =
+        parseInt(timeParts[1]);
+
+
+        /*
+           Compare current time
+           with activity start time
+        */
+
+        if(hours == activityHour &&
+           minutes == activityMinute)
+        {
+
+            /*
+               Prevent alert from coming
+               every second during the same minute
+            */
+
+            if(alarmShown != currentTimeString + i)
+            {
+                alarmShown =
+                currentTimeString + i;
+
+
+                var activityName =
+                activity.firstElementChild.innerHTML;
+
+
+                document.getElementById("reminder").innerHTML =
+                "🔔 <b>Reminder:</b> " +
+                activityName + " starts now!";
+
+
+                alert(
+                "🔔 REMINDER!\n\n" +
+                activityName +
+                "\n\nYour activity starts now!"
+                );
+            }
+        }
+    }
+}
+
+
+/*
+   Check every second
+*/
+
+setInterval(checkAlarm, 1000);
+
+</script>
+
+</body>
+</html>
