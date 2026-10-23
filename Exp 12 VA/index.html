@@ -1,0 +1,254 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Task Manager</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f0ff;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #00000015;
+        }
+
+        h1, h2 {
+            color: #6c4ab6;
+            text-align: center;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 14px;
+            cursor: pointer;
+            background: #7952cc;
+            color: white;
+        }
+
+        button:hover {
+            background: #5d36a8;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f7f4ff;
+            border-radius: 7px;
+            overflow-wrap: anywhere;
+        }
+
+        li span {
+            flex: 1;
+        }
+
+        li.completed span {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+        }
+
+        #apiStatus {
+            text-align: center;
+            color: #555;
+        }
+
+        #apiData {
+            background: #f7f4ff;
+            padding: 12px;
+            border-radius: 7px;
+        }
+
+        @media (max-width: 480px) {
+            .input-area {
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Interactive Task Manager</h1>
+
+        <div class="input-area">
+            <input type="text" id="taskInput"
+                   placeholder="Enter a task...">
+            <button id="addBtn">Add Task</button>
+        </div>
+
+        <p id="taskCount">Total Tasks: 0</p>
+        <ul id="taskList"></ul>
+
+        <hr>
+
+        <h2>AJAX Integration</h2>
+        <button id="loadBtn">Load Sample Data</button>
+        <p id="apiStatus">Click the button to fetch data.</p>
+        <div id="apiData"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+
+            // Browser storage: load saved tasks
+            let tasks = JSON.parse(
+                localStorage.getItem("myTasks") || "[]"
+            );
+
+            // Display tasks using DOM manipulation
+            function displayTasks() {
+                $("#taskList").empty();
+
+                tasks.forEach(function (task, index) {
+                    let item = $("<li>");
+
+                    if (task.completed) {
+                        item.addClass("completed");
+                    }
+
+                    let checkbox = $("<input>", {
+                        type: "checkbox"
+                    }).prop("checked", task.completed);
+
+                    let taskText = $("<span>").text(task.name);
+
+                    let deleteButton = $("<button>", {
+                        text: "Delete",
+                        class: "delete-btn"
+                    });
+
+                    checkbox.on("change", function () {
+                        tasks[index].completed = this.checked;
+                        saveTasks();
+                    });
+
+                    deleteButton.on("click", function () {
+                        tasks.splice(index, 1);
+                        saveTasks();
+                    });
+
+                    item.append(checkbox, taskText, deleteButton);
+                    $("#taskList").append(item);
+                });
+
+                $("#taskCount").text("Total Tasks: " + tasks.length);
+            }
+
+            // Save tasks in localStorage
+            function saveTasks() {
+                localStorage.setItem("myTasks", JSON.stringify(tasks));
+                displayTasks();
+            }
+
+            // Event handling: add task
+            $("#addBtn").on("click", function () {
+                let name = $("#taskInput").val().trim();
+
+                if (name === "") {
+                    alert("Please enter a task!");
+                    return;
+                }
+
+                tasks.push({
+                    name: name,
+                    completed: false
+                });
+
+                $("#taskInput").val("");
+                saveTasks();
+            });
+
+            // Press Enter to add a task
+            $("#taskInput").on("keypress", function (event) {
+                if (event.which === 13) {
+                    $("#addBtn").click();
+                }
+            });
+
+            // AJAX integration using fetch()
+            $("#loadBtn").on("click", async function () {
+                $("#apiStatus").text("Loading data...");
+                $("#apiData").empty();
+
+                try {
+                    let response = await fetch(
+                        "https://jsonplaceholder.typicode.com/todos?_limit=5"
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch data");
+                    }
+
+                    let data = await response.json();
+
+                    $("#apiStatus").text("Data loaded successfully!");
+
+                    data.forEach(function (todo) {
+                        let item = $("<p>").text(
+                            (todo.completed ? "✓ " : "○ ") + todo.title
+                        );
+
+                        $("#apiData").append(item);
+                    });
+
+                } catch (error) {
+                    $("#apiStatus").text(
+                        "Unable to load data. Check your internet connection."
+                    );
+                }
+            });
+
+            // Initial display
+            displayTasks();
+        });
+    </script>
+</body>
+</html>
+```
